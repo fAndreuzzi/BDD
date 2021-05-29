@@ -49,10 +49,13 @@ make_generalization('Data', 'NumPy', 'CSV', 'XML')
 make_generalization('Hardware', 'Cluster', 'Computer')
 
 # attributes
-make_attributes('Data', ['ID', 'Format', 'Notes'])
-make_attributes('Run', ['ID', 'Date', 'Duration', 'RAM', 'ExitCode', 'Error', 'Notes'])
-make_attributes('Hardware', ['ID', 'RAM', 'CPU', 'OS', 'Libraries', 'Notes'])
-make_attributes('Parameters', ['ID', 'Tuple'])
+make_attributes('Data', ['ID!', 'Notes'])
+make_attributes('Run', ['Date', 'Duration', 'RAM', 'ExitCode', 'Error', 'Notes'])
+make_attributes('Hardware', ['ID!', 'RAM', 'CPU', 'OS', 'Libraries', 'Notes'])
+make_attributes('Parameters', ['ID!', 'Tuple'])
+make_attributes('Cluster', ['Nodes'])
+make_attributes('NumPy', ['Shape', 'Dtype'])
+make_attributes('Algorithm', ['ID!', 'Notes'])
 
 # relations
 make_relation('Supports', 'Parameters', 'Algorithm', (1,'N'), (1,'N'))
@@ -66,4 +69,4 @@ A = to_agraph(graph)
 A.layout('dot')
 A.graph_attr['nodesep'] = 10
 A.graph_attr['dpi'] = 300
-A.draw('schema_concettuale.png')
+A.draw('res/schema_concettuale.png')
