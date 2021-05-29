@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{graphicx,wrapfig,lipsum}
 \usepackage[utf8]{inputenc}
+\usepackage{float}
 
 \title{Progettazione di una base di dati per esperimenti scientifici}
 \author{Francesco Andreuzzi - IN0500630}
@@ -17,53 +18,79 @@ Durante lo sviluppo di un progetto scientifico che comporti l'esecuzione di espe
     \includegraphics[width=2cm]{res/tree_brutto.png}
     \caption{\texttt{tree} della directory di un progetto.}\label{fig:tree}
 \end{wrapfigure}
-{ambito dello stesso progetto) al fine di pervenire all'obiettivo preposto, eventualmente insieme all'aumentare del numero di parametri che controllano determinate caratteristiche degli stessi, rende la situazione ancora più caotica.  Il progetto si propone il compito di risolvere questo problema con una base di dati, al fine di evitare gerarchie di cartelle con cui risulta difficoltoso lavorare a lungo termine (come quella in Figura \ref{fig:tree}).\par}
+ambito dello stesso progetto) al fine di pervenire all'obiettivo preposto, eventualmente insieme all'aumentare del numero di parametri che controllano determinate caratteristiche degli stessi, rende la situazione ancora più caotica.  Il progetto si propone il compito di risolvere questo problema con una base di dati, al fine di evitare gerarchie di cartelle con cui risulta difficoltoso lavorare a lungo termine (come quella in Figura \ref{fig:tree}).
 
-\section{Entità}
-Nel progetto saranno utilizzate le seguenti entità, ognuna rappresentata da una tabella:
-\begin{itemize}
-    \item Dataset \begin{itemize}
-        \item \emph{ID};
-        \item \emph{Format};
-        \item \emph{Notes}.
-    \end{itemize}
-    \item Algorithm \begin{itemize}
-        \item \emph{ID};
-        \item \emph{Git-Branch};
-        \item \emph{Requirements}.
-        \item \emph{Notes}.
-    \end{itemize}
-    \item Parameters \begin{itemize}
-        \item \emph{ID};
-        \item \emph{Tuple};
-    \end{itemize}
-    \item Run \begin{itemize}
-        \item \emph{ID};
-        \item \emph{Date};
-        \item \emph{Hardware-ID};
-        \item \emph{Algorithm-ID};
-        \item \emph{Dataset-ID};
-        \item \emph{Parameters-ID};
-        \item \emph{Outcome-ID};
-    \end{itemize}
-    \item Hardware \begin{itemize}
-        \item \emph{ID};
-        \item \emph{Label};
-        \item \emph{Modules}
-        \item \emph{Notes};
-    \end{itemize}
-    \item Outcome \begin{itemize}
-        \item \emph{ID};
-        \item \emph{Run-ID};
-    \end{itemize}
-\end{itemize}
+Il progetto sarà modelizzato nella forma di un algoritmo, che prende in input un dataset ed una n-upla di parametri, viene eseguito su un hardware di qualche tipo, e restituisce un dataset che contiene il risultato dell'esperimento. Si proverà a mantenere il più alto livello possibile di generalità, pur tentando di non ignorare dettagli importanti. Saranno fatte alcune ipotesi che, pur restringendo il campo di applicazione, sono facilmente generalizzabili e servono solamente a rendere più concreta l'esposizione.
 
-\begin{figure}
+\section{Ipotesi}
+\label{sec:ipotesi}
+Si supporrà che sui Cluster presi in considerazione sia installato il workload manager \texttt{Slurm}.
+
+Gli algoritmi saranno implementati nel linguaggio Python, ed accetteranno parametri posizionali di tipo intero corrispondenti ad indici di liste definite negli stessi algoritmi. Queste saranno definite all'interno degli algoritmi in questo modo:
+
+\verb|pod_ranks = [1-1.e-3, 1-1.e-6, 1-1.e-9, 1-1.e-12, -1]|
+
+Ad esempio, lanciando uno script con ``\texttt{python3 script.py 2}'' si eseguirà l'algoritmo prendendo come primo parametro il terzo valore della lista \texttt{pod\_ranks}. Questa supposizione ci consente di delegare all'utente la definizione di tipi di input fantasiosi e potenzialmente non supportati dal DBMS.
+
+\section{Schema concettuale}
+\begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.6\textwidth]{res/schema_concettuale.png}}
     \caption{Schema concettuale del progetto.}
-  \end{figure}
+\end{figure}
+Viene fornita una descrizione sintetica delle entità, delle relazioni e degli attributi.
+\begin{itemize}
+    \item \emph{Parameters}: Ogni riga rappresenta una tupla univoca di interi che rappresentano una possibile lista di parametri di un algoritmi, come specificato nella Sezione \ref{sec:ipotesi}. Non tutte le tuple di parametri sono supportate da tutti gli algoritmi, dato che alcuni possono richiedere un numero inferiore o superiore di parametri a seconda del metodo che implementano. Per questo motivo è stata aggiunta la relazione \emph{Supports};
+    \item \emph{Algorithm}:
+    \item \emph{Data}:
+    \item \emph{Run}:
+    \item \emph{Hardware}:
+\end{itemize}
 
 \section{Operazioni previste}
+L'idea del progetto è automatizzare, eventualmente con un'interfaccia di qualche tipo oltre alla base di dati, l'intera pipeline di comandi che porta dalla situazione in cui si dispone di dataset, hardware, algoritmo e parametri, a quella in cui sono stati generati i risultati dell'esperimento corrispondente a questa 4-upla. Nel mezzo vengono dunque inglobati i seguenti compiti:
+\begin{itemize}
+    \item Generazione del comando per lanciare lo script in cui consiste l'esperimento, che tiene conto dei parametri e della piattaforma (nel caso di un cluster il comando sarà del tipo \texttt{sbatch ...});
+    \item Scrittura dei risultati in una directory con nome dipendente da ognuno degli elementi che caratterizzano l'esperimento (algoritmo usato, parametri, hardware, dataset).
+    \item Comunicazione all'utente della posizione della directory corrispondente ad una particolare n-upla algoritmo-hardware-dataset-parametri, o di una lista di directory nel caso in cui uno di questi elementi sia omesso.
+\end{itemize}
+Inoltre sarà necessario consentire la registrazione di nuovi algoritmi, hardware, dataset, parametri.
+
+\section{Volumi}
+\begin{table}[H]
+    \begin{minipage}{.5\linewidth}
+      \vspace{-1cm}
+      \centering
+      \begin{tabular}{||l c||}
+        \hline
+        Concetto & Volume \\ [0.5ex]
+        \hline\hline
+        Data & c\\
+        Hardware & c\\
+        Run & c\\
+        Algorithm & c\\
+        Parameters & c\\
+        \hline
+       \end{tabular}
+    \end{minipage}
+    \begin{minipage}{.5\linewidth}
+      \vspace{-0.55cm}
+      \centering
+        \begin{tabular}{||l c||}
+            \hline
+            Concetto & Volume \\ [0.5ex]
+            \hline\hline
+            Available & c\\
+            On & c\\
+            Returns & c\\
+            Where & c\\
+            Uses & c\\
+            Supports & c\\
+            \hline
+           \end{tabular}
+    \end{minipage}
+\end{table}
+
+\section{Schema logico}
 
 \section{Note}
 In un contesto più realistico l'algoritmo dovrebbe essere un eseguibile, ma linguaggi come python non funzionano così. Dovrebbe essere previsto uno script di supporto.
