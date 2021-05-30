@@ -91,6 +91,17 @@ Inoltre sarà necessario consentire la registrazione di nuovi algoritmi, hardwar
 \end{table}
 
 \section{Schema logico}
+% TODO: Ridondanze
+% TODO: Forme normali
+Sono state rimosse le generalizzazioni totali \emph{Cluster} e \emph{Computer} di \emph{Hardware}, l'attributo \emph{Nodes} di \emph{Cluster} è accorpato a \emph{Hardware}, e vale coerentemente ``1'' se l'istanza è di tipo \emph{Computer}.
+
+Sono state rimosse le generalizzazioni parziali di \emph{Data} in quanto la loro presenza non apportava un particolare contributo; sono state rimpiazzate dall'attributo \emph{Format}, che consente all'utente di conoscere in anticipo il formato del dataset per regolarsi di conseguenza sul metodo adeguato per aprirlo. Gli attributi \emph{Shape} e \emph{Dtype} di \emph{NumPy} possono essere ottenuti rapidamente una volta aperto il dataset (per evitare il costo del caricamento in RAM si può usare il comando \texttt{np.load(..., mmap\_mode='r')}).
+
+E' stata rimossa l'entità \emph{Parameters}, in quanto non aveva una particolare utilità ed anzi rendeva il tutto più complicato: possiamo considerare effettivamente differenti due ``istanze'' di uno stesso algoritmo con parametri differenti, in quanto ci aspettiamo risultati del tutto indipendenti.
+\begin{figure}[H]
+    \makebox[\textwidth][c]{\includegraphics[width=1.6\textwidth]{res/schema_logico.png}}
+    \caption{Schema logico del progetto.}
+\end{figure}
 
 \section{Note}
 In un contesto più realistico l'algoritmo dovrebbe essere un eseguibile, ma linguaggi come python non funzionano così. Dovrebbe essere previsto uno script di supporto.
