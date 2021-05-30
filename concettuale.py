@@ -55,7 +55,7 @@ make_attributes('Hardware', ['ID!', 'RAM', 'CPU', 'OS', 'Libraries', 'Notes'])
 make_attributes('Parameters', ['ID!', 'Tuple'])
 make_attributes('Cluster', ['Nodes'])
 make_attributes('NumPy', ['Shape', 'Dtype'])
-make_attributes('Algorithm', ['ID!', 'Notes'])
+make_attributes('Algorithm', ['ID!', 'Path', 'GitBranch', 'Notes'])
 
 # relations
 make_relation('Supports', 'Parameters', 'Algorithm', (1,'N'), (1,'N'))
