@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 fontsize = 10
 relation_numbers_fontsize = 8
 
-graph = nx.Graph()
+graph = nx.MultiGraph()
 
 def make_entity(label):
     graph.add_node(label, shape='rectangle', fontsize=fontsize)
@@ -68,6 +68,7 @@ make_relation('On', 'Run', 'Data', (0, 1), (1, 1))
 make_relation('Where', 'Run', 'Hardware', (0, 'N'), (1, 1))
 make_relation('Returns', 'Run', 'Data', (0, 1), (0, 1))
 make_relation('With', 'Run', 'Parameters', (0, 'N'), (1, 1))
+make_relation('Fixes', 'Algorithm', 'Algorithm', (0, 1), (0, 1))
 
 # random constraints
 graph.add_edge('Data', available_label, style='invis')
