@@ -44,7 +44,7 @@ make_attributes('Run', ['Date', 'Duration', 'RAM', 'ExitCode', 'Error', 'Notes']
 make_attributes('Hardware', ['ID!', 'RAM', 'CPU', 'OS', 'Nodes', 'Libraries', 'Notes'])
 make_attributes('Algorithm', ['ID!', 'Path', 'GitBranch', 'Notes'])
 make_attributes('Library', ['Name', 'Version'])
-available_label = make_attributes('Available', ['Path'], constraint=False)
+available_label = make_attributes('Available', ['Path'])
 
 # relations
 make_relation('Available', 'Data', 'Hardware', (0, 'N'), (0, 'N'))
