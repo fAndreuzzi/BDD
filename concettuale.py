@@ -64,7 +64,7 @@ available_label = make_attributes('Available', ['Path'], constraint=False)
 
 # relations
 make_relation('Supports', 'Parameters', 'Algorithm', (1,'N'), (1,'N'))
-make_relation('Available', 'Data', 'Hardware', (1, 'N'), (1, 'N'))
+make_relation('Available', 'Data', 'Hardware', (0, 'N'), (0, 'N'))
 make_relation('Uses', 'Run', 'Algorithm', (0, 'N'), (1, 1))
 make_relation('On', 'Run', 'Data', (0, 1), (1, 1))
 make_relation('Where', 'Run', 'Hardware', (0, 'N'), (1, 1))
