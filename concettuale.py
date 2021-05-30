@@ -67,6 +67,7 @@ make_relation('Uses', 'Run', 'Algorithm', (0, 'N'), (1, 1))
 make_relation('On', 'Run', 'Data', (0, 1), (1, 1))
 make_relation('Where', 'Run', 'Hardware', (0, 'N'), (1, 1))
 make_relation('Returns', 'Run', 'Data', (0, 1), (0, 1))
+make_relation('With', 'Run', 'Parameters', (0, 'N'), (1, 1))
 
 # random constraints
 graph.add_edge('Data', available_label, style='invis')
