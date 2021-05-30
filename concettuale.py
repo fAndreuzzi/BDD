@@ -27,9 +27,9 @@ relation_numbers_to_str = lambda tp: '{},{}'.format(*tp)
 def make_relation(label, first, second, first_relation_numbers, second_relation_numbers):
     graph.add_node(label, shape='diamond', fontsize=fontsize)
     graph.add_edge(first, label, headlabel=relation_numbers_to_str(first_relation_numbers),
-        labelfontsize=relation_numbers_fontsize, labeldistance=3.0)
+        labelfontsize=relation_numbers_fontsize, labeldistance=2.0)
     graph.add_edge(second, label, headlabel=relation_numbers_to_str(second_relation_numbers),
-        labelfontsize=relation_numbers_fontsize, labeldistance=3.0)
+        labelfontsize=relation_numbers_fontsize, labeldistance=2.0)
 
 def make_generalization(label, *generalization_names):
     graph.add_node(label + "_gen", shape='point', style='invis')
@@ -45,6 +45,7 @@ make_entity('Algorithm')
 make_entity('Run')
 make_entity('Parameters')
 make_entity('Hardware')
+make_entity('Library')
 
 # generalizations
 make_generalization('Data', 'NumPy', 'CSV', 'XML')
@@ -58,6 +59,7 @@ make_attributes('Parameters', ['ID!', 'Tuple'])
 make_attributes('Cluster', ['Nodes'])
 make_attributes('NumPy', ['Shape', 'Dtype'])
 make_attributes('Algorithm', ['ID!', 'Path', 'GitBranch', 'Notes'])
+make_attributes('Library', ['Name', 'Version'])
 available_label = make_attributes('Available', ['Path'], constraint=False)
 
 # relations
@@ -69,6 +71,8 @@ make_relation('Where', 'Run', 'Hardware', (0, 'N'), (1, 1))
 make_relation('Returns', 'Run', 'Data', (0, 1), (0, 1))
 make_relation('With', 'Run', 'Parameters', (0, 'N'), (1, 1))
 make_relation('Fixes', 'Algorithm', 'Algorithm', (0, 1), (0, 1))
+make_relation('Has', 'Hardware', 'Library', (0, 'N'), (0, 'N'))
+make_relation('Needs', 'Algorithm', 'Library', (0, 'N'), (0, 'N'))
 
 # random constraints
 graph.add_edge('Data', available_label, style='invis')
