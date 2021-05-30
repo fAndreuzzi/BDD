@@ -2,6 +2,7 @@
 \usepackage{graphicx,wrapfig,lipsum}
 \usepackage[utf8]{inputenc}
 \usepackage{float}
+\usepackage{hyperref}
 
 \title{Una base di dati per esperimenti scientifici}
 \author{Francesco Andreuzzi - IN0500630}
@@ -24,13 +25,19 @@ Il progetto sarà modelizzato nella forma di un algoritmo, che prende in input u
 
 \section{Ipotesi}
 \label{sec:ipotesi}
-Si supporrà che sui Cluster presi in considerazione sia installato il workload manager \texttt{Slurm}.
+Si supporrà che sui cluster presi in considerazione sia installato il workload manager \texttt{Slurm}. Inoltre l'utente incarnato dal wrapper che ingloba la base di dati deve avere i diritti di lettura e scrittura ovunque sia necessario, su tutte le macchine registrate nella tabella \fbox{Hardware}.
 
 Gli algoritmi saranno implementati nel linguaggio Python, ed accetteranno parametri posizionali di tipo intero corrispondenti ad indici di liste definite negli stessi algoritmi. Queste saranno definite all'interno degli algoritmi in questo modo:
 
 \verb|pod_ranks = [1-1.e-3, 1-1.e-6, 1-1.e-9, 1-1.e-12, -1]|
 
 Ad esempio, lanciando uno script con ``\texttt{python3 script.py 2}'' si eseguirà l'algoritmo prendendo come primo parametro il terzo valore della lista \texttt{pod\_ranks}. Questa supposizione ci consente di delegare all'utente la definizione di tipi di input fantasiosi e potenzialmente non supportati dal DBMS.
+
+Si supporrà che le implementazioni degli algoritmi siano disponibili istantaneamente su tutte le macchine. Trattandosi solitamente di script solitamente leggeri perchè privi di UI, la sincronizzazione tra dispositivi risulta molto semplice e possiamo ignorarla.
+
+Saranno supportati solamente esperimenti deterministici: ci aspettiamo che l'esecuzione di uno stesso algoritmo sullo stesso hardware, con la stessa tupla di parametri e lo stesso dataset in input restituisca lo stesso risultato (con eventualmente qualche fluttuazione di lieve importanza nella durata dell'esperimento).
+
+Infine si suppone che i vincoli riguardanti la versione di una libreria siano solamente di tipo $\geq$. In altre parole, se un'istanza di \fbox{Algorithm} richiede l'installazione della \fbox{Library} \{\texttt{'Name':'numpy', 'Version':'1.20'}\}, saranno considerate valide anche le versioni \texttt{1.20.1}, \texttt{1.20.2}, etc. Si potrebbero presentare casi in cui non vi è più \emph{backward compatibility} oltre una certa versione, ma si considera consigliabile in questo caso sistemare l'implementazione per utilizzare la nuova interfaccia.
 
 \section{Schema concettuale}
 % ammettiamo che una Run non ritorni un Data perchè potrebbe dare errore
@@ -40,12 +47,14 @@ Ad esempio, lanciando uno script con ``\texttt{python3 script.py 2}'' si eseguir
 \end{figure}
 Viene fornita una descrizione sintetica delle entità, delle relazioni e degli attributi.
 \begin{itemize}
-    \item \emph{Parameters}: Ogni riga rappresenta una tupla univoca di interi che rappresentano una possibile lista di parametri di un algoritmi, come specificato nella Sezione \ref{sec:ipotesi}. Non tutte le tuple di parametri sono supportate da tutti gli algoritmi, dato che alcuni possono richiedere un numero inferiore o superiore di parametri a seconda del metodo che implementano. Per questo motivo è stata aggiunta la relazione \emph{Supports};
-    \item \emph{Algorithm}:
-    \item \emph{Data}:
-    \item \emph{Run}:
-    \item \emph{Hardware}:
+    \item \fbox{Parameters}: Ogni riga contiene una tupla univoca di interi che rappresenta una possibile lista di parametri di un algoritmo, come specificato nella Sezione \ref{sec:ipotesi}. Non tutte le tuple di parametri sono supportate da tutti gli algoritmi, dato che alcuni possono richiedere un numero inferiore o superiore di parametri a seconda del metodo che implementano. Per questo motivo è stata aggiunta la relazione \emph{Supports};
+    \item \fbox{Algorithm}: L'implementazione di un particolare metodo sperimentato, nella pratica le istanze di \fbox{Algorithm} possono differire di poco, ma non tenteremo alcuna associazione visto che in diversi ambiti un piccolo cambiamento porta a risultati molto diversi. Per questo motivo diverse versioni di uno stesso algoritmo sono considerate come algoritmi differenti. Un algoritmo è localizzato da un \emph{Path} e da una eventuale \emph{GitBranch}, che potrebbe essere eventualmente nulla. E' possibile utilizzare la relazione \emph{Fixes} tra due istanze di \fbox{Algorithm} per evidenziare il fatto che uno è una versione successiva dell'altro. Inoltre la relazione \emph{Needs} consente di specificare eventuali librerie non standard (sotto forma di istanze di \fbox{Library}) necessarie per l'esecuzione dell'algoritmo.
+    \item \fbox{Library}: Una libreria non standard, identificata univocamente da nome e versione.
+    \item \fbox{Data}: Dataset di input, oppure output di una particolare \fbox{Run} caratterizzata da un \emph{Name}. Prendiamo in considerazione diversi formati: NumPy, XML, CSV. Ognuno richiede da parte dell'utilizzatore (che può essere un utente oppure un'istanza di \fbox{Algorithm}) metodi differenti per l'apertura. Essendo i dataset in generale considerevolmente pesanti, non possiamo supporre che ognuno sia disponibile istantaneamente su tutte le macchine. Per questa ragione è stata introdotta la relazione \emph{Available}.
+    \item \fbox{Run}: Il risultato di un esperimento con un ben specificato \fbox{Algorithm} (tramite la relazione \emph{Uses}), su un \fbox{Hardware} specifico (relazione \emph{Where}), applicato ad un'istanza di \fbox{Data} in input (relazione \emph{On}), con una precisa tupla di parametri (relazione \emph{With}). L'attributo \emph{Date} registra la data di esecuzione dell'esperimento (nel caso di esperimenti lunghi, la data di inizio), \emph{Duration} la durata in secondi, \emph{RAM} la memoria complessiva utilizzata, \emph{ExitCode} il codice restituito dallo script (che può essere utilizzato per verificare l'eventuale occorrenza di errori), \emph{Error} una stringa esplicativa dell'eventuale errore occorso.
+    \item \fbox{Hardware}: Rappresenta una macchina a disposizione dell'organizzazione che conduce l'esperimento. Gli attributi \emph{RAM, CPU, OS} consentono di memorizzare le specifiche del dispositivo. Le istanze di \fbox{Hardware} possono essere computer singoli o cluster, ed in quest'ultimo caso avremo un attributo in più, \emph{Nodes}, che immagazzina il numero di nodi disponibili sul cluster. E' possibile stabilire relazioni di tipo \emph{Has} tra istanze di \fbox{Hardware} e \fbox{Library} per specificare quali librerie sono installate su una particolare macchina.
 \end{itemize}
+Tutte le entità dispongono di un attributo \emph{Notes} per eventuali annotazioni relative ad una particolare istanza (per \fbox{Algorithm} un commento sulla metodologia utilizzata dall'algoritmo, per \fbox{Hardware} eventuali problemi ricorrenti con quella particolare macchina, ad esempio).
 
 \section{Operazioni previste}
 L'idea del progetto è automatizzare, eventualmente con un'interfaccia di qualche tipo oltre alla base di dati, l'intera pipeline di comandi che porta dalla situazione in cui si dispone di dataset, hardware, algoritmo e parametri, a quella in cui sono stati generati i risultati dell'esperimento corrispondente a questa 4-upla. Nel mezzo vengono dunque inglobati i seguenti compiti:
@@ -54,22 +63,38 @@ L'idea del progetto è automatizzare, eventualmente con un'interfaccia di qualch
     \item Scrittura dei risultati in una directory con nome dipendente da ognuno degli elementi che caratterizzano l'esperimento (algoritmo usato, parametri, hardware, dataset).
     \item Comunicazione all'utente della posizione della directory corrispondente ad una particolare n-upla algoritmo-hardware-dataset-parametri, o di una lista di directory nel caso in cui uno di questi elementi sia omesso.
 \end{itemize}
-Inoltre sarà necessario consentire la registrazione di nuovi algoritmi, hardware, dataset, parametri.
+Inoltre sarà necessario consentire la registrazione di nuovi algoritmi, hardware, dataset, parametri, librerie. Ci si aspetta inoltre che la base di dati generi la sequenza di comandi necessaria per l'installazione di una libreria su una macchina, e che sia possibile verificare se un'istanza di \fbox{Algorithm} può essere eseguita su un certo \fbox{Hardware}.
+
+\section{Schema concettuale modificato}
+Sono state rimosse le generalizzazioni totali \fbox{Cluster} e \fbox{Computer} di \fbox{Hardware}, l'attributo \emph{Nodes} di \fbox{Cluster} è accorpato a \fbox{Hardware}, e vale coerentemente ``1'' se l'istanza è di tipo \fbox{Computer}.
+
+Sono state rimosse le generalizzazioni parziali di \fbox{Data} in quanto la loro presenza non apportava un particolare contributo; sono state rimpiazzate dall'attributo \emph{Format}, che consente all'utente di conoscere in anticipo il formato del dataset per regolarsi di conseguenza sul metodo adeguato per aprirlo. Gli attributi \emph{Shape} e \emph{Dtype} di \emph{NumPy} possono essere ottenuti rapidamente una volta aperto il dataset (per evitare il costo del caricamento in RAM si può usare il comando \texttt{np.load(..., mmap\_mode='r')}).
+
+E' stata rimossa l'entità \fbox{Parameters}, in quanto non aveva una particolare utilità ed anzi rendeva il tutto più complicato: possiamo considerare effettivamente differenti due istanze di uno stesso algoritmo con attributi \emph{Parameters} differenti, in quanto ci aspettiamo risultati del tutto indipendenti. La rimozione della relazione \emph{Supports} si può motivare in due modi:
+\begin{enumerate}
+    \item Costituiva un'informazione ridondante, in quanto testando una n-upla non supportata con l'algoritmo considerato si sarebbe ottenuto un errore nei primi istanti di esecuzione;
+    \item L'utente può comunque indicare che una n-upla è supportata da un particolare algoritmo nel momento in cui li registra in una riga di \fbox{Algorithms}.
+\end{enumerate}
+\begin{figure}[H]
+    \makebox[\textwidth][c]{\includegraphics[width=1.6\textwidth]{res/schema_concettuale2.png}}
+    \caption{Schema concettuale modificato del progetto.}
+\end{figure}
 
 \section{Volumi}
 \begin{table}[H]
     \begin{minipage}{.5\linewidth}
-      \vspace{-1cm}
+      %\vspace{-1cm}
       \centering
       \begin{tabular}{||l l||}
         \hline
-        Concetto & Volume \\ [0.5ex]
+        Entità & Volume \\ [0.5ex]
         \hline\hline
         Data & $<10000 + 5$\\
-        Hardware & 5\\
+        Hardware & $<5$\\
         Run & $<10000$\\
-        Algorithm & 5\\
-        Parameters & 1000\\
+        Algorithm & $<5$\\
+        Parameters & $<1000$\\
+        Library & $<50$\\
         \hline
        \end{tabular}
     \end{minipage}
@@ -78,7 +103,7 @@ Inoltre sarà necessario consentire la registrazione di nuovi algoritmi, hardwar
       \centering
         \begin{tabular}{||l l||}
             \hline
-            Concetto & Volume \\ [0.5ex]
+            Relazione & Volume \\ [0.5ex]
             \hline\hline
             Available & $<25$\\
             On & $<10000$\\
@@ -86,30 +111,19 @@ Inoltre sarà necessario consentire la registrazione di nuovi algoritmi, hardwar
             Where & $<10000$\\
             Uses & $<10000$\\
             Supports & $<5000$\\
+            Needs & $<5000$\\
+            Fixes & $<5000$\\
+            With & $<5000$\\
+            Has & $<5000$\\
             \hline
            \end{tabular}
     \end{minipage}
 \end{table}
 
-\section{Schema logico}
-Sono state rimosse le generalizzazioni totali \emph{Cluster} e \emph{Computer} di \emph{Hardware}, l'attributo \emph{Nodes} di \emph{Cluster} è accorpato a \emph{Hardware}, e vale coerentemente ``1'' se l'istanza è di tipo \emph{Computer}.
-
-Sono state rimosse le generalizzazioni parziali di \emph{Data} in quanto la loro presenza non apportava un particolare contributo; sono state rimpiazzate dall'attributo \emph{Format}, che consente all'utente di conoscere in anticipo il formato del dataset per regolarsi di conseguenza sul metodo adeguato per aprirlo. Gli attributi \emph{Shape} e \emph{Dtype} di \emph{NumPy} possono essere ottenuti rapidamente una volta aperto il dataset (per evitare il costo del caricamento in RAM si può usare il comando \texttt{np.load(..., mmap\_mode='r')}).
-
-E' stata rimossa l'entità \emph{Parameters}, in quanto non aveva una particolare utilità ed anzi rendeva il tutto più complicato: possiamo considerare effettivamente differenti due istanze di uno stesso algoritmo con parametri differenti, in quanto ci aspettiamo risultati del tutto indipendenti. La rimozione della relazione \emph{Supports} si può motivare in due modi:
-\begin{enumerate}
-    \item Costituiva un'informazione ridondante, in quanto testando una n-upla non supportata con l'algoritmo considerato si sarebbe ottenuto un errore nei primi istanti di esecuzione;
-    \item L'utente può comunque indicare che una n-upla è supportata da un particolare algoritmo nel momento in cui li registra in una riga della entity \emph{Algorithms}.
-\end{enumerate}
-\begin{figure}[H]
-    \makebox[\textwidth][c]{\includegraphics[width=1.6\textwidth]{res/schema_logico.png}}
-    \caption{Schema logico del progetto.}
-\end{figure}
-
 \section{Note}
 In un contesto più realistico l'algoritmo dovrebbe essere un eseguibile, ma linguaggi come python non funzionano così. Dovrebbe essere previsto uno script di supporto.
 
-Questo documento è stato realizzato con \LaTeX. Gli schemi sono stati realizzati in Python utilizzando le librerie \emph{NetworkX, (Py)Graphviz}, ed il VCS \emph{git}.
+Questo documento è stato realizzato con \LaTeX. Gli schemi sono stati realizzati in Python utilizzando le librerie \href{https://networkx.org/documentation/stable/index.html}{\emph{NetworkX}} e \emph{(Py)\href{http://www.graphviz.org/}{Graphviz}}, ed il VCS \emph{git}.
 
 L'idea per questo progetto è stata ispirata dalla collera conseguente alla necessità di dover eseguire da zero un pool di 400 \emph{jobs} sul cluster HPC della SISSA perchè i risultati corrispondenti erano stati sovrascritti da un altro esperimento con un algoritmo diverso ma parametri identici.
 
