@@ -58,7 +58,7 @@ make_attributes('Hardware', ['MachineName!', 'RAM', 'CPU', 'OS', 'Libraries', 'N
 make_attributes('Parameters', ['ID!', 'Tuple', 'Notes'])
 make_attributes('Cluster', ['Nodes'])
 make_attributes('NumPy', ['Shape', 'Dtype'])
-make_attributes('Algorithm', ['Path!', 'GitBranch!', 'Notes'])
+make_attributes('Algorithm', ['GitCommit!', 'GitBranch', 'Notes'])
 make_attributes('Library', ['Name!', 'Version!'])
 available_label = make_attributes('Available', ['Path'], constraint=False)
 
