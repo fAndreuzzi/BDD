@@ -73,6 +73,7 @@ make_relation('With', 'Run', 'Parameters', (0, 'N'), (1, 1))
 make_relation('Fixes', 'Algorithm', 'Algorithm', (0, 1), (0, 1))
 make_relation('Has', 'Hardware', 'Library', (0, 'N'), (0, 'N'))
 make_relation('Needs', 'Algorithm', 'Library', (0, 'N'), (0, 'N'))
+make_relation('Depends', 'Library', 'Library', (0, 'N'), (0, 'N'))
 
 # random constraints
 graph.add_edge('Data', available_label, style='invis')

@@ -55,6 +55,7 @@ make_relation('Returns', 'Run', 'Data', (0, 1), (0, 1))
 make_relation('Fixes', 'Algorithm', 'Algorithm', (0, 1), (0, 1))
 make_relation('Has', 'Hardware', 'Library', (0, 'N'), (0, 'N'))
 make_relation('Needs', 'Algorithm', 'Library', (0, 'N'), (0, 'N'))
+make_relation('Depends', 'Library', 'Library', (0, 'N'), (0, 'N'))
 
 # random constraints
 graph.add_edge('Data', available_label, style='invis')
@@ -63,4 +64,4 @@ A = to_agraph(graph)
 A.layout('dot')
 A.graph_attr['nodesep'] = 10
 A.graph_attr['dpi'] = 300
-A.draw('res/schema_concettuale2.png')
+A.draw('res/schema_concettuale_ristrutturato.png')
