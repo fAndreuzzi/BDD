@@ -54,12 +54,12 @@ make_generalization('Hardware', 'Cluster', 'Computer')
 # attributes
 make_attributes('Data', ['ID!', 'Name', 'Notes'])
 make_attributes('Run', ['Date', 'Duration', 'RAM', 'ExitCode', 'Error', 'Notes'])
-make_attributes('Hardware', ['ID!', 'RAM', 'CPU', 'OS', 'Libraries', 'Notes'])
-make_attributes('Parameters', ['ID!', 'Tuple'])
+make_attributes('Hardware', ['MachineName!', 'RAM', 'CPU', 'OS', 'Libraries', 'Notes'])
+make_attributes('Parameters', ['ID!', 'Tuple', 'Notes'])
 make_attributes('Cluster', ['Nodes'])
 make_attributes('NumPy', ['Shape', 'Dtype'])
-make_attributes('Algorithm', ['ID!', 'Path', 'GitBranch', 'Notes'])
-make_attributes('Library', ['Name', 'Version'])
+make_attributes('Algorithm', ['Path!', 'GitBranch!', 'Notes'])
+make_attributes('Library', ['Name!', 'Version!'])
 available_label = make_attributes('Available', ['Path'], constraint=False)
 
 # relations
