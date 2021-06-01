@@ -41,7 +41,7 @@ make_entity('Library')
 # attributes
 make_attributes('Data', ['ID!', 'Name', 'Format', 'Notes'])
 make_attributes('Run', ['Date', 'Duration', 'RAM', 'ExitCode', 'Error', 'Notes'])
-make_attributes('Hardware', ['MachineName!', 'RAM', 'CPU', 'OS', 'Nodes', 'Libraries', 'Notes'])
+make_attributes('Hardware', ['MachineName!', 'RAM', 'CPU', 'OS', 'Nodes', 'Notes'])
 make_attributes('Algorithm', ['GitCommit!', 'Parameters!', 'GitBranch', 'Notes'])
 make_attributes('Library', ['Name!', 'Version!'])
 available_label = make_attributes('Available', ['Path'])

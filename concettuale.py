@@ -54,7 +54,7 @@ make_generalization('Hardware', 'Cluster', 'Computer')
 # attributes
 make_attributes('Data', ['ID!', 'Name', 'Notes'])
 make_attributes('Run', ['Date', 'Duration', 'RAM', 'ExitCode', 'Error', 'Notes'])
-make_attributes('Hardware', ['MachineName!', 'RAM', 'CPU', 'OS', 'Libraries', 'Notes'])
+make_attributes('Hardware', ['MachineName!', 'RAM', 'CPU', 'OS', 'Notes'])
 make_attributes('Parameters', ['ID!', 'Tuple', 'Notes'])
 make_attributes('Cluster', ['Nodes'])
 make_attributes('NumPy', ['Shape', 'Dtype'])
