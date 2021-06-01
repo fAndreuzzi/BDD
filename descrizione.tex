@@ -66,7 +66,9 @@ Viene fornita una descrizione sintetica delle entità, delle relazioni e degli a
     \item \fbox{Run}: Il risultato di un esperimento con un ben specificato \fbox{Algorithm} (tramite la relazione \emph{Uses}), su un \fbox{Hardware} specifico (relazione \emph{Where}), applicato ad un'istanza di \fbox{Data} in input (relazione \emph{On}), con una precisa tupla di parametri (relazione \emph{With}).
 
     L'attributo \emph{Date} registra la data di esecuzione dell'esperimento (nel caso di esperimenti lunghi, la data di inizio), \emph{Duration} la durata in secondi, \emph{RAM} la memoria complessiva utilizzata, \emph{ExitCode} il codice restituito dallo script (che può essere utilizzato per verificare l'eventuale occorrenza di errori), \emph{Error} una stringa esplicativa dell'eventuale errore occorso.
-    \item \fbox{Hardware}: Rappresenta una macchina a disposizione dell'organizzazione che conduce l'esperimento. Gli attributi \emph{RAM, CPU, OS} consentono di memorizzare le specifiche del dispositivo. Le istanze di \fbox{Hardware} possono essere computer singoli o cluster, ed in quest'ultimo caso avremo un attributo in più, \emph{Nodes}, che immagazzina il numero di nodi disponibili sul cluster. E' possibile stabilire relazioni di tipo \emph{Has} tra istanze di \fbox{Hardware} e \fbox{Library} per specificare quali librerie sono installate su una particolare macchina.
+    \item \fbox{Hardware}: Rappresenta una macchina a disposizione dell'organizzazione che conduce l'esperimento. Ogni macchina ha un nome univoco nell'organizzazione, a lunghezza variabile. Gli attributi \emph{RAM, CPU\_Clock, CPU\_N\_Cores, OS} consentono di memorizzare le specifiche del dispositivo.
+
+    Le istanze di \fbox{Hardware} possono essere computer singoli o cluster, ed in quest'ultimo caso avremo un attributo in più, \emph{Nodes}, che immagazzina il numero di nodi disponibili sul cluster. E' possibile stabilire relazioni di tipo \emph{Has} tra istanze di \fbox{Hardware} e \fbox{Library} per specificare quali librerie sono installate su una particolare macchina.
 \end{itemize}
 Tutte le entità dispongono di un attributo \emph{Notes} per eventuali annotazioni relative ad una particolare istanza (per \fbox{Algorithm} un commento sulla metodologia utilizzata dall'algoritmo, per \fbox{Hardware} eventuali problemi ricorrenti con quella particolare macchina, ad esempio).
 
@@ -85,7 +87,7 @@ Sono state rimosse le generalizzazioni totali \fbox{Cluster} e \fbox{Computer} d
 
 Sono state rimosse le generalizzazioni parziali di \fbox{Data} in quanto la loro presenza non apportava un particolare contributo; sono state rimpiazzate dall'attributo \emph{Format}, che consente all'utente di conoscere in anticipo il formato del dataset per regolarsi di conseguenza sul metodo adeguato per aprirlo. Gli attributi \emph{Shape} e \emph{Dtype} di \emph{NumPy} possono essere ottenuti rapidamente una volta aperto il dataset (per evitare il costo del caricamento in RAM si può usare il comando \texttt{np.load(..., mmap\_mode='r')}).
 
-E' stata rimossa l'entità \fbox{Parameters}, in quanto non aveva una particolare utilità ed anzi rendeva il tutto più complicato: possiamo considerare effettivamente differenti due istanze di uno stesso algoritmo con attributi \emph{Parameters} differenti, in quanto ci aspettiamo risultati del tutto indipendenti.
+L'entità \fbox{Parameters} è stata trasformata in un attributo dell'entità \fbox{Run}, in quanto non si è ritenuto che vi fosse una particolare necessità nel tenerla separata (non si prevede che si facciano analisi trasversali su algoritmi diversi in base ad una tupla comune di parametri).
 
 \begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.6\textwidth]{res/schema_concettuale_ristrutturato.png}}
@@ -104,7 +106,7 @@ Consideriamo la base di dati come uno strumento utilizzabile nell'ambito di un s
         Data & $<5000 + 5$\\
         Hardware & $<5$\\
         Run & $<5000$\\
-        Algorithm & $<1000$\\
+        Algorithm & $<25$\\
         Library & $<200$\\
         \hline
        \end{tabular}
@@ -276,6 +278,7 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
           InputData & PK/FK & VARCHAR\\
           Hardware & PK/FK & VARCHAR\\
           OutputData & FK & VARCHAR\\
+          Parameters & PK & VARCHAR\\
           Date & & DATE\\
           Duration & & INT\\
           RAM & & SMALLINT\\
@@ -297,5 +300,4 @@ L'idea per questo progetto è stata ispirata dalla collera conseguente alla nece
 
 \end{document}
 
-%TODO: cpu_n_cores/clock in descrizione attributi, hardware MachineName
 %TODO: parameters come attributi di Run
