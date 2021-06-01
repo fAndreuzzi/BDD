@@ -3,6 +3,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{float}
 \usepackage{hyperref}
+\usepackage{caption}
 
 \title{Una base di dati per esperimenti scientifici}
 \author{Francesco Andreuzzi - IN0500630}
@@ -94,8 +95,7 @@ E' stata rimossa l'entità \fbox{Parameters}, in quanto non aveva una particolar
 \section{Volumi}
 Consideriamo la base di dati come uno strumento utilizzabile nell'ambito di un singolo progetto. Il paradigma è facilmente estensibile per la gestione simultanea di più progetti, è sufficiente aggiungere l'entità \fbox{Project} ed un attributo \emph{Project} alle entità \fbox{Run\vphantom{g}}, \fbox{Algorithm\vphantom{g}}, \fbox{Data\vphantom{g}}.
 \begin{table}[H]
-    \begin{minipage}{.5\linewidth}
-      \vspace{1.2cm}
+    \begin{minipage}[b]{.5\linewidth}
       \centering
       \begin{tabular}{||l l||}
         \hline
@@ -110,8 +110,7 @@ Consideriamo la base di dati come uno strumento utilizzabile nell'ambito di un s
        \end{tabular}
        \caption{Volumi delle entità.}
     \end{minipage}
-    \begin{minipage}{.5\linewidth}
-      \vspace{-0.5cm}
+    \begin{minipage}[b]{.5\linewidth}
       \centering
         \begin{tabular}{||l l||}
             \hline
@@ -138,8 +137,160 @@ In genere testeremo un algoritmo con una combinazione di parametri ``veloce'' su
 
 Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del valore medio dell'output di \texttt{pip freeze | wc -l} su diversi computer, stimando il tutto per eccesso in quanto più versioni di una stessa libreria possono convivere nella base di dati (essendo installate su \fbox{Hardware} diversi).
 
+\section{Schema logico}
+\begin{table}[H]
+    \makebox[\textwidth][c]{
+    \begin{minipage}[t]{.5\linewidth}
+      \centering
+      \caption*{Library}
+      \begin{tabular}{||l c l||}
+        \hline
+        Attributo & PK/FK & Tipo\\ [0.5ex]
+        \hline\hline
+        Name & PK & \\
+        Version & PK & \\
+        \hline
+       \end{tabular}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{.5\linewidth}
+        \centering
+        \caption*{Depends}
+        \begin{tabular}{||l c l||}
+          \hline
+          Attributo & PK/FK & Tipo\\ [0.5ex]
+          \hline\hline
+          DependentName & PK,FK & \\
+          DependentVersion & PK,FK & \\
+          StandName & PK,FK & \\
+          StandVersion & PK,FK & \\
+          \hline
+         \end{tabular}
+      \end{minipage}
+      \hfill
+      \begin{minipage}[t]{.5\linewidth}
+        \centering
+        \caption*{Hardware}
+        \begin{tabular}{||l c l||}
+          \hline
+          Attributo & PK/FK & Tipo\\ [0.5ex]
+          \hline\hline
+          MachineName & PK & \\
+          RAM & & \\
+          CPU & & \\
+          OS & & \\
+          Nodes & & \\
+          Notes & & \\
+          \hline
+         \end{tabular}
+      \end{minipage}
+    }
+\end{table}
+\begin{table}[H]
+    \makebox[\textwidth][c]{
+    \begin{minipage}[t]{.5\linewidth}
+      \centering
+      \caption*{Has}
+      \begin{tabular}{||l c l||}
+        \hline
+        Attributo & PK/FK & Tipo\\ [0.5ex]
+        \hline\hline
+        Hardware & PK/FK & \\
+        LibraryName & PK/FK & \\
+        LibraryVersion & PK/FK & \\
+        \hline
+       \end{tabular}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{.5\linewidth}
+        \centering
+        \caption*{Algorithm}
+        \begin{tabular}{||l c l||}
+          \hline
+          Attributo & PK/FK & Tipo\\ [0.5ex]
+          \hline\hline
+          GitCommit & PK & \\
+          Parameters & PK & \\
+          GitBranch & & \\
+          Fixes & & \\
+          Notes & & \\
+          \hline
+         \end{tabular}
+      \end{minipage}
+      \hfill
+      \begin{minipage}[t]{.5\linewidth}
+        \centering
+        \caption*{Needs}
+        \begin{tabular}{||l c l||}
+          \hline
+          Attributo & PK/FK & Tipo\\ [0.5ex]
+          \hline\hline
+          AlgorithmCommit & PK/FK & \\
+          AlgorithmParameters & PK/FK & \\
+          LibraryName & PK/FK & \\
+          LibraryVersion & PK/FK & \\
+          \hline
+         \end{tabular}
+      \end{minipage}
+    }
+\end{table}
+
+\begin{table}[H]
+    \makebox[\textwidth][c]{
+    \begin{minipage}[t]{.5\linewidth}
+      \centering
+      \caption*{Data}
+      \begin{tabular}{||l c l||}
+        \hline
+        Attributo & PK/FK & Tipo\\ [0.5ex]
+        \hline\hline
+        ID & PK & \\
+        Name & & \\
+        Format & & \\
+        Notes & & \\
+        \hline
+       \end{tabular}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{.5\linewidth}
+        \centering
+        \caption*{Available}
+        \begin{tabular}{||l c l||}
+          \hline
+          Attributo & PK/FK & Tipo\\ [0.5ex]
+          \hline\hline
+          Hardware & PK/FK & \\
+          Data & PK/FK & \\
+          Path & & \\
+          \hline
+         \end{tabular}
+      \end{minipage}
+      \hfill
+      \begin{minipage}[t]{.5\linewidth}
+        \centering
+        \caption*{Run}
+        \begin{tabular}{||l c l||}
+          \hline
+          Attributo & PK/FK & Tipo\\ [0.5ex]
+          \hline\hline
+          Algorithm & PK/FK & \\
+          InputData & PK/FK & \\
+          Hardware & PK/FK & \\
+          OutputData & FK & \\
+          Date & & \\
+          Duration & & \\
+          RAM & & \\
+          ExitCode & & \\
+          Error & & \\
+          Notes & & \\
+          \hline
+         \end{tabular}
+      \end{minipage}
+    }
+\end{table}
+
 \section{Note}
-In un contesto più realistico l'algoritmo dovrebbe essere un eseguibile, ma linguaggi come python non funzionano così. Dovrebbe essere previsto uno script di supporto.
+Si potrebbe pensare che lasciare nella tabella \fbox{Library} un numero indefinito di versioni di una stessa libreria sia dannoso in termini di spazio: sarebbe sufficiente mantenere solo le librerie referenziate dall'ultima versione di un algoritmo. Il motivo per cui non si è scelto di inserire un \emph{check} per cancellare in modo autonomo dalla tabella librerie che siamo certi non saranno più usate in una \fbox{Run} è che si intende mantenere un database di snapshot: poter ricostruire nel dettaglio quali librerie ed in quale versione erano presenti sulla macchina è fondamentale per risolvere bug o verificare risultati inattesi. E' anche il motivo per cui si consiglia di specificare la versione delle librerie nel file \texttt{requirements.txt}. Per glis stessi motivi consentiamo la convivenza di più versioni di una libreria su uno stesso \fbox{Hardware} (resa possibile da utility come \texttt{pipenv}).
 
 Questo documento è stato realizzato con \LaTeX. Gli schemi sono stati realizzati in Python utilizzando le librerie \href{https://networkx.org/documentation/stable/index.html}{\emph{NetworkX}} e \emph{(Py)\href{http://www.graphviz.org/}{Graphviz}}, ed il VCS \emph{git}. Il codice sorgente per schemi e documento è disponibile nel repository GitHub \href{https://github.com/fAndreuzzi/BDD}{fAndreuzzi/BDD}.
 
