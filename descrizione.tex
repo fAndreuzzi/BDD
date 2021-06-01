@@ -140,47 +140,45 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
 \section{Schema logico}
 \begin{table}[H]
     \makebox[\textwidth][c]{
-    \begin{minipage}[t]{.5\linewidth}
+    \begin{minipage}[t]{.57\linewidth}
       \centering
       \caption*{Library}
       \begin{tabular}{||l c l||}
         \hline
         Attributo & PK/FK & Tipo\\ [0.5ex]
         \hline\hline
-        Name & PK & \\
-        Version & PK & \\
+        Name & PK & VARCHAR\\
+        Version & PK & VARCHAR\\
         \hline
        \end{tabular}
     \end{minipage}
     \hfill
-    \begin{minipage}[t]{.5\linewidth}
+    \begin{minipage}[t]{.57\linewidth}
         \centering
         \caption*{Depends}
         \begin{tabular}{||l c l||}
           \hline
           Attributo & PK/FK & Tipo\\ [0.5ex]
           \hline\hline
-          DependentName & PK,FK & \\
-          DependentVersion & PK,FK & \\
-          StandName & PK,FK & \\
-          StandVersion & PK,FK & \\
+          DependentName & PK,FK & VARCHAR\\
+          DependentVersion & PK,FK & VARCHAR\\
+          StandName & PK,FK & VARCHAR\\
+          StandVersion & PK,FK & VARCHAR\\
           \hline
          \end{tabular}
       \end{minipage}
       \hfill
-      \begin{minipage}[t]{.5\linewidth}
+      \begin{minipage}[t]{.57\linewidth}
         \centering
-        \caption*{Hardware}
+        \caption*{Data}
         \begin{tabular}{||l c l||}
           \hline
           Attributo & PK/FK & Tipo\\ [0.5ex]
           \hline\hline
-          MachineName & PK & \\
-          RAM & & \\
-          CPU & & \\
-          OS & & \\
-          Nodes & & \\
-          Notes & & \\
+          ID & PK & INT\\
+          Name & & VARCHAR\\
+          Format & & VARCHAR\\
+          Notes & & TEXT\\
           \hline
          \end{tabular}
       \end{minipage}
@@ -188,47 +186,45 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
 \end{table}
 \begin{table}[H]
     \makebox[\textwidth][c]{
-    \begin{minipage}[t]{.5\linewidth}
+    \begin{minipage}[t]{.55\linewidth}
       \centering
       \caption*{Has}
       \begin{tabular}{||l c l||}
         \hline
         Attributo & PK/FK & Tipo\\ [0.5ex]
         \hline\hline
-        Hardware & PK/FK & \\
-        LibraryName & PK/FK & \\
-        LibraryVersion & PK/FK & \\
+        Hardware & PK/FK & VARCHAR\\
+        LibraryName & PK/FK & VARCHAR\\
+        LibraryVersion & PK/FK & VARCHAR\\
         \hline
        \end{tabular}
     \end{minipage}
     \hfill
-    \begin{minipage}[t]{.5\linewidth}
+    \begin{minipage}[t]{.55\linewidth}
         \centering
         \caption*{Algorithm}
         \begin{tabular}{||l c l||}
           \hline
           Attributo & PK/FK & Tipo\\ [0.5ex]
           \hline\hline
-          GitCommit & PK & \\
-          Parameters & PK & \\
-          GitBranch & & \\
-          Fixes & & \\
-          Notes & & \\
+          GitCommit & PK & CHAR\\
+          GitBranch & & VARCHAR\\
+          Fixes & FK & CHAR\\
+          Notes & & TEXT\\
           \hline
          \end{tabular}
       \end{minipage}
       \hfill
-      \begin{minipage}[t]{.5\linewidth}
+      \begin{minipage}[t]{.55\linewidth}
         \centering
         \caption*{Needs}
         \begin{tabular}{||l c l||}
           \hline
           Attributo & PK/FK & Tipo\\ [0.5ex]
           \hline\hline
-          AlgorithmCommit & PK/FK & \\
-          AlgorithmParameters & PK/FK & \\
-          LibraryName & PK/FK & \\
-          LibraryVersion & PK/FK & \\
+          Algorithm & PK/FK & CHAR\\
+          LibraryName & PK/FK & VARCHAR\\
+          LibraryVersion & PK/FK & VARCHAR\\
           \hline
          \end{tabular}
       \end{minipage}
@@ -237,52 +233,55 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
 
 \begin{table}[H]
     \makebox[\textwidth][c]{
-    \begin{minipage}[t]{.5\linewidth}
-      \centering
-      \caption*{Data}
-      \begin{tabular}{||l c l||}
-        \hline
-        Attributo & PK/FK & Tipo\\ [0.5ex]
-        \hline\hline
-        ID & PK & \\
-        Name & & \\
-        Format & & \\
-        Notes & & \\
-        \hline
-       \end{tabular}
-    \end{minipage}
+    \begin{minipage}[t]{.55\linewidth}
+        \centering
+        \caption*{Hardware}
+        \begin{tabular}{||l c l||}
+            \hline
+            Attributo & PK/FK & Tipo\\ [0.5ex]
+            \hline\hline
+            MachineName & PK & VARCHAR\\
+            RAM & & SMALLINT\\
+            CPU\_Clock & & TINYINT\\
+            CPU\_N\_Cores & & TINYINT\\
+            OS & & VARCHAR\\
+            Nodes & & TINYINT\\
+            Notes & & TEXT\\
+            \hline
+            \end{tabular}
+        \end{minipage}
     \hfill
-    \begin{minipage}[t]{.5\linewidth}
+    \begin{minipage}[t]{.55\linewidth}
         \centering
         \caption*{Available}
         \begin{tabular}{||l c l||}
           \hline
           Attributo & PK/FK & Tipo\\ [0.5ex]
           \hline\hline
-          Hardware & PK/FK & \\
-          Data & PK/FK & \\
-          Path & & \\
+          Hardware & PK/FK & VARCHAR\\
+          Data & PK/FK & VARCHAR\\
+          Path & & TEXT\\
           \hline
          \end{tabular}
       \end{minipage}
       \hfill
-      \begin{minipage}[t]{.5\linewidth}
+      \begin{minipage}[t]{.55\linewidth}
         \centering
         \caption*{Run}
         \begin{tabular}{||l c l||}
           \hline
           Attributo & PK/FK & Tipo\\ [0.5ex]
           \hline\hline
-          Algorithm & PK/FK & \\
-          InputData & PK/FK & \\
-          Hardware & PK/FK & \\
-          OutputData & FK & \\
-          Date & & \\
-          Duration & & \\
-          RAM & & \\
-          ExitCode & & \\
-          Error & & \\
-          Notes & & \\
+          Algorithm & PK/FK & VARCHAR\\
+          InputData & PK/FK & VARCHAR\\
+          Hardware & PK/FK & VARCHAR\\
+          OutputData & FK & VARCHAR\\
+          Date & & DATE\\
+          Duration & & INT\\
+          RAM & & SMALLINT\\
+          ExitCode & & TINYINT\\
+          Error & & TEXT\\
+          Notes & & TEXT\\
           \hline
          \end{tabular}
       \end{minipage}
@@ -290,10 +289,13 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
 \end{table}
 
 \section{Note}
-Si potrebbe pensare che lasciare nella tabella \fbox{Library} un numero indefinito di versioni di una stessa libreria sia dannoso in termini di spazio: sarebbe sufficiente mantenere solo le librerie referenziate dall'ultima versione di un algoritmo. Il motivo per cui non si è scelto di inserire un \emph{check} per cancellare in modo autonomo dalla tabella librerie che siamo certi non saranno più usate in una \fbox{Run} è che si intende mantenere un database di snapshot: poter ricostruire nel dettaglio quali librerie ed in quale versione erano presenti sulla macchina è fondamentale per risolvere bug o verificare risultati inattesi. E' anche il motivo per cui si consiglia di specificare la versione delle librerie nel file \texttt{requirements.txt}. Per glis stessi motivi consentiamo la convivenza di più versioni di una libreria su uno stesso \fbox{Hardware} (resa possibile da utility come \texttt{pipenv}).
+Si potrebbe pensare che lasciare nella tabella \fbox{Library} un numero indefinito di versioni di una stessa libreria sia dannoso in termini di spazio: sarebbe sufficiente mantenere solo le librerie referenziate dall'ultima versione di un algoritmo. Il motivo per cui si è scelto di non inserire un \emph{check} per cancellare in modo autonomo dalla tabella librerie che siamo certi non saranno più usate in una \fbox{Run} è che si intende mantenere un database di snapshot: poter ricostruire nel dettaglio quali librerie ed in quale versione erano presenti sulla macchina è fondamentale per risolvere bug o verificare risultati inattesi. E' anche il motivo per cui si consiglia di specificare la versione delle librerie nel file \texttt{requirements.txt}. Per gli stessi motivi consentiamo la convivenza di più versioni di una libreria su uno stesso \fbox{Hardware} (resa possibile da utility come \texttt{pipenv}).
 
 Questo documento è stato realizzato con \LaTeX. Gli schemi sono stati realizzati in Python utilizzando le librerie \href{https://networkx.org/documentation/stable/index.html}{\emph{NetworkX}} e \emph{(Py)\href{http://www.graphviz.org/}{Graphviz}}, ed il VCS \emph{git}. Il codice sorgente per schemi e documento è disponibile nel repository GitHub \href{https://github.com/fAndreuzzi/BDD}{fAndreuzzi/BDD}.
 
 L'idea per questo progetto è stata ispirata dalla collera conseguente alla necessità di dover eseguire da zero un pool di 400 \emph{jobs} sul cluster HPC della SISSA perchè i risultati corrispondenti erano stati sovrascritti da un altro esperimento con un algoritmo diverso ma parametri identici.
 
 \end{document}
+
+%TODO: cpu_n_cores/clock in descrizione attributi, hardware MachineName
+%TODO: parameters come attributi di Run
