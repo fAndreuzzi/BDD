@@ -27,7 +27,7 @@ Il progetto sarà modelizzato nella forma di un algoritmo, che prende in input u
 
 \section{Ipotesi}
 \label{sec:ipotesi}
-Si supporrà che sui cluster presi in considerazione sia installato il workload manager \texttt{Slurm}. Inoltre l'utente incarnato dal wrapper che ingloba la base di dati deve avere i diritti di lettura e scrittura ovunque sia necessario, su tutte le macchine registrate nella tabella \fbox{Hardware}.
+Si supporrà che sui cluster presi in considerazione sia installato il workload manager \texttt{Slurm}. Inoltre l'utente incarnato dal wrapper che ingloba la base di dati deve avere i diritti di lettura e scrittura ovunque sia necessario, su tutte le macchine registrate nella tabella \fbox{Hardware}. Inoltre ad ogni macchina (computer personale o un cluster) è associato un nome univoco all'interno dell'organizzazione.
 
 Gli algoritmi saranno implementati in Python (un linguaggio molto usato in ambito scientifico) ed accetteranno parametri posizionali di tipo intero corrispondenti ad indici di liste definite negli stessi algoritmi. Queste saranno definite all'interno degli algoritmi in questo modo:
 
@@ -41,7 +41,7 @@ Su tutte le macchine sarà installato di default il package manager \href{https:
 
 Saranno supportati solamente esperimenti deterministici: ci aspettiamo che l'esecuzione di uno stesso algoritmo sullo stesso hardware, con la stessa tupla di parametri e lo stesso dataset in input restituisca lo stesso risultato (con eventualmente qualche fluttuazione di lieve importanza nella durata dell'esperimento).
 
-Infine si suppone che i vincoli riguardanti la versione di una libreria siano solamente di tipo $\geq$. In altre parole, se un'istanza di \fbox{Algorithm} richiede l'installazione della \fbox{Library} \{\texttt{'Name':'numpy', 'Version':'1.20'}\}, saranno considerate valide anche le versioni \texttt{1.20.1}, \texttt{1.20.2}, etc. Si potrebbero presentare casi in cui non vi è più \emph{backward compatibility} oltre una certa versione, ma si considera consigliabile in questo caso sistemare l'implementazione per utilizzare la nuova interfaccia.
+Infine si suppone che i vincoli riguardanti la versione di una libreria siano solamente di tipo ``$\geq$''. In altre parole, se un'istanza di \fbox{Algorithm} richiede l'installazione della \fbox{Library} \{\texttt{'Name':'numpy', 'Version':'1.20'}\}, saranno considerate valide anche le versioni \texttt{1.20.1}, \texttt{1.20.2}, etc. Si potrebbero presentare casi in cui non vi è più \emph{backward compatibility} oltre una certa versione, ma si considera consigliabile in questo caso sistemare l'implementazione per utilizzare la nuova interfaccia.
 
 \section{Schema concettuale}
 % ammettiamo che una Run non ritorni un Data perchè potrebbe dare errore
@@ -51,9 +51,9 @@ Infine si suppone che i vincoli riguardanti la versione di una libreria siano so
 \end{figure}
 Viene fornita una descrizione sintetica delle entità, delle relazioni e degli attributi.
 \begin{itemize}
-    \item \fbox{Algorithm}: L'implementazione di un particolare metodo sperimentato, nella pratica le istanze di \fbox{Algorithm} possono differire di poco, ma non tenteremo alcuna associazione visto che in diversi ambiti un piccolo cambiamento porta a risultati molto diversi. Per questo motivo diverse versioni di uno stesso algoritmo sono considerate come algoritmi differenti.
+    \item \fbox{Algorithm}: Rappresenta l'implementazione di un particolare metodo sperimentato. Nella pratica le istanze di \fbox{Algorithm} possono differire di poco, ma non tenteremo alcuna associazione visto che in diversi ambiti un piccolo cambiamento porta a risultati molto diversi. Per questo motivo diverse versioni di uno stesso algoritmo sono considerate come algoritmi differenti.
 
-    Ogni algoritmo viene implementato in una specifica \emph{branch}, lo script necessario per il lancio deve trovarsi in un percorso ben specificato dalla root del repository (ad esempio \texttt{src/launchscript.py}). Le entità di tipo \fbox{Algorithm} inoltre sono identificate dal codice corrispondente ad una \emph{commit}.
+    Ogni algoritmo viene implementato in una specifica \emph{branch}, lo script necessario per il lancio deve trovarsi in un percorso ben specificato partendo dalla root del repository (ad esempio \texttt{src/launchscript.py}). Le entità di tipo \fbox{Algorithm} inoltre sono identificate dal codice corrispondente ad una \emph{commit}.
 
     E' possibile utilizzare la relazione \emph{Fixes} tra due istanze di \fbox{Algorithm} per evidenziare il fatto che uno è una versione successiva dell'altro. Inoltre la relazione \emph{Needs} consente di specificare eventuali librerie non standard (sotto forma di istanze di \fbox{Library}) necessarie per l'esecuzione dell'algoritmo.
     \item \fbox{Parameters}: Ogni riga contiene una tupla univoca di interi che rappresenta una possibile lista di parametri di un algoritmo, come specificato nella Sezione \ref{sec:ipotesi}. Non tutte le tuple di parametri sono supportate da tutti gli algoritmi, dato che alcuni possono richiedere un numero inferiore o superiore di parametri a seconda del metodo che implementano. Per questo motivo è stata aggiunta la relazione \emph{Supports}.
@@ -77,13 +77,12 @@ L'idea del progetto è automatizzare, eventualmente con un'interfaccia di qualch
 \begin{itemize}
     \item Verifica della realizzabilità di un esperimento (Sulla macchina è disponibile il dataset di input su cui si intende eseguire l'algoritmo? Sono installate le librerie richieste dall'algoritmo, e tutte le librerie da cui dipendono?)
     \item Generazione del comando per lanciare lo script in cui consiste l'esperimento, che tiene conto dei parametri e della piattaforma (nel caso di un cluster il comando sarà del tipo \texttt{sbatch ...});
-    \item Scrittura dei risultati in una directory con nome dipendente da ognuno degli elementi che caratterizzano l'esperimento (algoritmo usato, parametri, hardware, dataset).
-    \item Comunicazione all'utente della posizione della directory corrispondente ad una particolare n-upla algoritmo-hardware-dataset-parametri, o di una lista di directory nel caso in cui uno di questi elementi sia omesso.
+    \item Generazione di un percorso dove salvare l'output dell'esperimento, con nome dipendente dagli elementi che caratterizzano la \emph{Run} (algoritmo usato, parametri, input).
 \end{itemize}
 Inoltre sarà necessario consentire la registrazione di nuovi algoritmi, hardware, dataset, parametri, librerie. Ci si aspetta inoltre che la base di dati generi la sequenza di comandi necessaria per l'installazione di una libreria su una macchina, e che sia possibile verificare se un'istanza di \fbox{Algorithm} può essere eseguita su un certo \fbox{Hardware}.
 
 \section{Schema concettuale ristrutturato}
-Sono state rimosse le generalizzazioni totali \fbox{Cluster} e \fbox{Computer} di \fbox{Hardware}, l'attributo \emph{Nodes} di \fbox{Cluster} è accorpato a \fbox{Hardware}, e vale coerentemente ``1'' se l'istanza è di tipo \fbox{Computer}.
+Sono state rimosse le generalizzazioni totali \fbox{Cluster} e \fbox{Computer} di \fbox{Hardware}, l'attributo \emph{Nodes} di \fbox{Cluster} è accorpato a \fbox{Hardware}, e vale coerentemente ``1'' se l'istanza è di tipo \fbox{Computer}. Per chiarezza si potrebbe inserire un ulteriore attributo \emph{Cluster} che possa assumere solo valori booleani, in quanto questa informazione viene utilizzata per generare il comando utile a lanciare lo script relativo ad un esperimento (\texttt{sbatch script.sh} per un cluster, \texttt{python3 script.py} per una macchina personale). Si è deciso però di evitare in quanto questa informazione può essere facilmente recuperata con un test sul numero di nodi della relative istanza di \fbox{Hardware}.
 
 Sono state rimosse le generalizzazioni parziali di \fbox{Data} in quanto la loro presenza non apportava un particolare contributo; sono state rimpiazzate dall'attributo \emph{Format}, che consente all'utente di conoscere in anticipo il formato del dataset per regolarsi di conseguenza sul metodo adeguato per aprirlo. Gli attributi \emph{Shape} e \emph{Dtype} di \emph{NumPy} possono essere ottenuti rapidamente una volta aperto il dataset (per evitare il costo del caricamento in RAM si può usare il comando \texttt{np.load(..., mmap\_mode='r')}).
 
@@ -291,6 +290,13 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
     }
 \end{table}
 
+\section{Vincoli non esprimibili}
+Non sono ammessi cicli tra le dipendenze delle istanze di \fbox{Library}. Quando l'utente tenta di aggiungere una nuova entry a \fbox{Library} viene scaricato ed esaminato il file \texttt{requirements.txt} della libreria (per moduli Python); eventuali librerie necessarie non presenti nel database vengono aggiunte ricorsivamente. Se si forma un ciclo (a questo scopo due entry sono considerate uguali se gli attributi \emph{Name} coincidono) l'albero ``crolla'' e l'inserimento della prima libreria fallisce. In caso contrario aggiungiamo tutte le librerie alla base di dati, mantenendo quindi l'invariante relativa all'assenza di cicli nel database. Si noti che non si è ancora scaricato materialmente niente su una macchina, sono stati considerati solamente i metadati delle librerie coinvolte.
+
+In modo simile (la situazione è più semplice) si verifica l'assenza di cicli nella relazione \emph{Fixes} tra istanze di \fbox{Algorithm}.
+
+Non sono ammesse relazioni di tipo \emph{Has} tra un'istanza di \fbox{Hardware} ed un'istanza $X$ di \fbox{Library} se sulla stessa macchina non sono presenti tutte le librerie da cui $X$ dipende.
+
 \section{Note}
 Si potrebbe pensare che lasciare nella tabella \fbox{Library} un numero indefinito di versioni di una stessa libreria sia dannoso in termini di spazio: sarebbe sufficiente mantenere solo le librerie referenziate dall'ultima versione di un algoritmo. Il motivo per cui si è scelto di non inserire un \emph{check} per cancellare in modo autonomo dalla tabella librerie che siamo certi non saranno più usate in una \fbox{Run} è che si intende mantenere un database di snapshot: poter ricostruire nel dettaglio quali librerie ed in quale versione erano presenti sulla macchina è fondamentale per risolvere bug o verificare risultati inattesi. E' anche il motivo per cui si consiglia di specificare la versione delle librerie nel file \texttt{requirements.txt}. Per gli stessi motivi consentiamo la convivenza di più versioni di una libreria su uno stesso \fbox{Hardware} (resa possibile da utility come \texttt{pipenv}).
 
@@ -299,5 +305,3 @@ Questo documento è stato realizzato con \LaTeX. Gli schemi sono stati realizzat
 L'idea per questo progetto è stata ispirata dalla collera conseguente alla necessità di dover eseguire da zero un pool di 400 \emph{jobs} sul cluster HPC della SISSA perchè i risultati corrispondenti erano stati sovrascritti da un altro esperimento con un algoritmo diverso ma parametri identici.
 
 \end{document}
-
-%TODO: parameters come attributi di Run
