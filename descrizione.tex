@@ -5,7 +5,7 @@
 \usepackage{hyperref}
 \usepackage{caption}
 
-\title{Una base di dati per esperimenti scientifici}
+\title{Progetto di una base di dati per l'organizzazione di esperimenti scientifici}
 \author{Francesco Andreuzzi - IN0500630}
 \date{\today}
 
@@ -21,13 +21,17 @@ Durante lo sviluppo di un progetto scientifico che comporti l'esecuzione di espe
     \includegraphics[width=2cm]{res/tree_brutto.png}
     \caption{\texttt{tree} della directory di un progetto.}\label{fig:tree}
 \end{wrapfigure}
-ambito dello stesso progetto) al fine di pervenire all'obiettivo preposto, eventualmente insieme all'aumentare del numero di parametri che controllano determinate caratteristiche degli stessi, rende la situazione ancora più caotica.  Il progetto si propone il compito di risolvere questo problema con una base di dati, al fine di evitare gerarchie di cartelle con cui risulta difficoltoso lavorare a lungo termine (come quella in Figura \ref{fig:tree}).
+ambito di un unico progetto) al fine di pervenire all'obiettivo preposto, eventualmente insieme all'aumentare del numero di parametri che controllano determinati comportamenti, rende la situazione ancora più caotica.
 
-Il progetto sarà modelizzato nella forma di un algoritmo, che prende in input un dataset ed una n-upla di parametri, viene eseguito su un hardware di qualche tipo, e restituisce un dataset che contiene il risultato dell'esperimento. Saranno fatte alcune ipotesi che, pur restringendo il campo di applicazione, sono facilmente generalizzabili e servono solamente a rendere più concreta l'esposizione.
+Il progetto si propone il compito di risolvere questo problema con una base di dati, al fine di evitare gerarchie di cartelle con cui risulta difficoltoso lavorare a lungo termine (come quella in Figura \ref{fig:tree}).
+
+Il progetto sarà modellizzato in forma di algoritmo, che prende in input un dataset ed una n-upla di parametri, viene eseguito su un hardware di qualche tipo, e restituisce un dataset che contiene il risultato dell'esperimento. Saranno fatte alcune ipotesi che, pur restringendo il campo di applicazione, sono facilmente generalizzabili e servono solamente a rendere più concreta l'esposizione.
+
+La base di dati è pensata in modo da essere circondata da un wrapper che riceve comandi dall'utente, interroga il database ed invia determinati comandi a seconda delle necessità.
 
 \section{Ipotesi}
 \label{sec:ipotesi}
-Si supporrà che sui cluster presi in considerazione sia installato il workload manager \texttt{Slurm}. Inoltre l'utente incarnato dal wrapper che ingloba la base di dati deve avere i diritti di lettura e scrittura ovunque sia necessario, su tutte le macchine registrate nella tabella \fbox{Hardware}. Inoltre ad ogni macchina (computer personale o un cluster) è associato un nome univoco all'interno dell'organizzazione.
+Si supporrà che sui cluster presi in considerazione sia installato il workload manager \texttt{Slurm}. Inoltre l'utente fittizio ``wrapper'' (che ingloba la base di dati) deve avere i diritti di lettura e scrittura ovunque sia necessario, ovvero su tutte le macchine registrate nella tabella \fbox{Hardware}. Inoltre ad ogni macchina (computer personale o cluster) è associato un nome univoco all'interno dell'organizzazione.
 
 Gli algoritmi saranno implementati in Python (un linguaggio molto usato in ambito scientifico) ed accetteranno parametri posizionali di tipo intero corrispondenti ad indici di liste definite negli stessi algoritmi. Queste saranno definite all'interno degli algoritmi in questo modo:
 
@@ -35,34 +39,34 @@ Gli algoritmi saranno implementati in Python (un linguaggio molto usato in ambit
 
 Ad esempio, lanciando uno script con ``\texttt{python3 script.py 2}'' si eseguirà l'algoritmo prendendo come primo parametro il terzo valore della lista \texttt{pod\_ranks}. Questa supposizione ci consente di delegare all'utente la definizione di tipi di input fantasiosi e potenzialmente non supportati dal DBMS.
 
-Si supporrà che le implementazioni degli algoritmi siano disponibili istantaneamente su tutte le macchine. Trattandosi solitamente di script solitamente leggeri perchè privi di UI, la sincronizzazione tra dispositivi risulta molto semplice e possiamo ignorarla.
+Si supporrà che le implementazioni degli algoritmi siano disponibili istantaneamente su tutte le macchine. Trattandosi solitamente di script solitamente leggeri perchè privi di UI, la sincronizzazione tra dispositivi risulta molto semplice e veloce, sicchè possiamo ignorarla.
 
 Su tutte le macchine sarà installato di default il package manager \href{https://pypi.org/project/pip/}{pip}, uno dei più popolari per l'installazione di librerie Python.
 
-Saranno supportati solamente esperimenti deterministici: ci aspettiamo che l'esecuzione di uno stesso algoritmo sullo stesso hardware, con la stessa tupla di parametri e lo stesso dataset in input restituisca lo stesso risultato (con eventualmente qualche fluttuazione di lieve importanza nella durata dell'esperimento).
+Saranno supportati solamente esperimenti deterministici: ci aspettiamo che l'esecuzione di uno stesso algoritmo sullo stesso hardware, con la stessa tupla di parametri e lo stesso dataset in input restituisca lo stesso risultato (con eventualmente qualche fluttuazione di lieve importanza su misure intrinsecamente poco precise, come la durata dell'esperimento).
 
-Infine si suppone che i vincoli riguardanti la versione di una libreria siano solamente di tipo ``$\geq$''. In altre parole, se un'istanza di \fbox{Algorithm} richiede l'installazione della \fbox{Library} \{\texttt{'Name':'numpy', 'Version':'1.20'}\}, saranno considerate valide anche le versioni \texttt{1.20.1}, \texttt{1.20.2}, etc. Si potrebbero presentare casi in cui non vi è più \emph{backward compatibility} oltre una certa versione, ma si considera consigliabile in questo caso sistemare l'implementazione per utilizzare la nuova interfaccia.
+Infine si suppone che i vincoli riguardanti la versione di una libreria siano solamente di tipo ``$\geq$''. In altre parole, se un'istanza di \fbox{Algorithm} richiede l'installazione della \fbox{Library} \{\texttt{'Name':'numpy', 'Version':'1.20'}\}, saranno considerate valide anche le versioni \texttt{1.20.1}, \texttt{1.21}, etc. Si potrebbero presentare casi in cui non vi è più \emph{backward compatibility} oltre una certa versione, ma si considera consigliabile in questo caso sistemare l'implementazione per utilizzare la nuova interfaccia della libreria. La versione di una libreria è rappresentata da un codice univoco numerico incrementale, e quindi utilizzabile per un confronto tra versioni differenti.
 
 \section{Schema concettuale}
 % ammettiamo che una Run non ritorni un Data perchè potrebbe dare errore
 \begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.6\textwidth]{res/schema_concettuale.png}}
-    \caption{Schema concettuale del progetto.}
+    \caption{Schema concettuale del progetto; gli attributi aventi il ruolo di \emph{primary key} sono riportato con il suffisso ``!'', mentre le relazioni aventi questo compito sono rappresentate tramite una linea più spessa. L'immagine è consultabile con una risoluzione migliore nel file in allegato ``\texttt{schema\_concettuale.png}''.}
 \end{figure}
 Viene fornita una descrizione sintetica delle entità, delle relazioni e degli attributi.
 \begin{itemize}
-    \item \fbox{Algorithm}: Rappresenta l'implementazione di un particolare metodo sperimentato. Nella pratica le istanze di \fbox{Algorithm} possono differire di poco, ma non tenteremo alcuna associazione visto che in diversi ambiti un piccolo cambiamento porta a risultati molto diversi. Per questo motivo diverse versioni di uno stesso algoritmo sono considerate come algoritmi differenti.
+    \item \fbox{Algorithm}: Rappresenta l'implementazione di un particolare metodo sperimentato. Nella pratica le istanze di \fbox{Algorithm} possono differire di poco, ma non tenteremo alcuna associazione visto che come spesso accade un piccolo cambiamento porta a risultati molto diversi. Per questo motivo diverse versioni di uno stesso algoritmo sono considerate come algoritmi differenti.
 
-    Ogni algoritmo viene implementato in una specifica \emph{branch}, lo script necessario per il lancio deve trovarsi in un percorso ben specificato partendo dalla root del repository (ad esempio \texttt{src/launchscript.py}). Le entità di tipo \fbox{Algorithm} inoltre sono identificate dal codice corrispondente ad una \emph{commit}.
+    Ogni algoritmo viene implementato in una specifica \emph{branch} di \texttt{git}, lo script necessario per il lancio deve trovarsi in un percorso ben specificato partendo dalla root del repository (ad esempio \texttt{src/launchscript.py}). Le entità di tipo \fbox{Algorithm} inoltre sono identificate dal codice corrispondente ad una \emph{commit}. Gli algoritmi non sono dunque salvati all'interno della base di dati, ma in una branch di \texttt{git} condivisa su tutte le memorie di massa degli \fbox{Hardware} che collaborano al progetto.
 
     E' possibile utilizzare la relazione \emph{Fixes} tra due istanze di \fbox{Algorithm} per evidenziare il fatto che uno è una versione successiva dell'altro. Inoltre la relazione \emph{Needs} consente di specificare eventuali librerie non standard (sotto forma di istanze di \fbox{Library}) necessarie per l'esecuzione dell'algoritmo.
     \item \fbox{Parameters}: Ogni riga contiene una tupla univoca di interi che rappresenta una possibile lista di parametri di un algoritmo, come specificato nella Sezione \ref{sec:ipotesi}. Non tutte le tuple di parametri sono supportate da tutti gli algoritmi, dato che alcuni possono richiedere un numero inferiore o superiore di parametri a seconda del metodo che implementano. Per questo motivo è stata aggiunta la relazione \emph{Supports}.
     \item \fbox{Library}: Una libreria non standard, identificata univocamente da nome e versione. Si supporrà che la disponibilità di una libreria su una macchina implichi la sua presenza all'interno della variabile di sistema \texttt{PATH}, il che consente di evitare di specificare un percorso per raggiungere i file necessari.
 
     Una libreria può dipendere da altre librerie, ovvero volendo utilizzare una libreria $X$ che dipende dalle librerie $[A,B,C]$ è necessario avere installate $[A,B,C]$ sulla macchina su cui si intende eseguire l'esperimento. La relazione \emph{Depends} modelizza questo requisito.
-    \item \fbox{Data}: Dataset di input, oppure output di una particolare \fbox{Run} caratterizzata da un \emph{Name}. Prendiamo in considerazione diversi formati: NumPy, XML, CSV. Ognuno richiede da parte dell'utilizzatore (che può essere un utente oppure un'istanza di \fbox{Algorithm}) metodi differenti per l'apertura.
+    \item \fbox{Data}: Dataset di input, oppure output di una particolare \fbox{Run} caratterizzata da un \emph{Name}. Prendiamo in considerazione diversi formati: NumPy, XML, CSV. Ognuno richiede metodi differenti per l'apertura.
 
-    Essendo i dataset in generale considerevolmente pesanti, non possiamo supporre che ciascuno sia disponibile istantaneamente su tutte le macchine. Per questa ragione è stata introdotta la relazione \emph{Available}, che lega coppie di dataset a macchine su cui sono disponibili senza operazioni intermedie (che possono richiedere del tempo).
+    Essendo i dataset in generale considerevolmente pesanti, non possiamo supporre che ciascuno sia disponibile istantaneamente su tutte le macchine. Per questa ragione è stata introdotta la relazione \emph{Available}, che lega coppie composte da un dataset ed una macchina su cui questo dataset è disponibile senza operazioni intermedie (che invece potrebbero richiedere del tempo).
     \item \fbox{Run}: Il risultato di un esperimento con un ben specificato \fbox{Algorithm} (tramite la relazione \emph{Uses}), su un \fbox{Hardware} specifico (relazione \emph{Where}), applicato ad un'istanza di \fbox{Data} in input (relazione \emph{On}), con una precisa tupla di parametri (relazione \emph{With}).
 
     L'attributo \emph{Date} registra la data di esecuzione dell'esperimento (nel caso di esperimenti lunghi, la data di inizio), \emph{Duration} la durata in secondi, \emph{RAM} la memoria complessiva utilizzata, \emph{ExitCode} il codice restituito dallo script (che può essere utilizzato per verificare l'eventuale occorrenza di errori), \emph{Error} una stringa esplicativa dell'eventuale errore occorso.
@@ -73,16 +77,18 @@ Viene fornita una descrizione sintetica delle entità, delle relazioni e degli a
 Tutte le entità dispongono di un attributo \emph{Notes} per eventuali annotazioni relative ad una particolare istanza (per \fbox{Algorithm} un commento sulla metodologia utilizzata dall'algoritmo, per \fbox{Hardware} eventuali problemi ricorrenti con quella particolare macchina, ad esempio).
 
 \section{Operazioni previste}
-L'idea del progetto è automatizzare, eventualmente con un'interfaccia di qualche tipo oltre alla base di dati, l'intera pipeline di comandi che porta dalla situazione in cui si dispone di dataset, hardware, algoritmo e parametri, a quella in cui sono stati generati i risultati dell'esperimento corrispondente a questa 4-upla. Nel mezzo vengono dunque inglobati i seguenti compiti:
+L'idea del progetto è automatizzare, tramite l'utilizzo del wrapper che ingloba la base di dati, l'intera pipeline di comandi che porta dalla situazione in cui si dispone di dataset, hardware, algoritmo e parametri, a quella in cui sono stati generati i risultati dell'esperimento corrispondente a questa 4-upla. Nel mezzo vengono dunque incorporati i seguenti compiti:
 \begin{itemize}
     \item Verifica della realizzabilità di un esperimento (Sulla macchina è disponibile il dataset di input su cui si intende eseguire l'algoritmo? Sono installate le librerie richieste dall'algoritmo, e tutte le librerie da cui dipendono?)
     \item Generazione del comando per lanciare lo script in cui consiste l'esperimento, che tiene conto dei parametri e della piattaforma (nel caso di un cluster il comando sarà del tipo \texttt{sbatch ...});
     \item Generazione di un percorso dove salvare l'output dell'esperimento, con nome dipendente dagli elementi che caratterizzano la \emph{Run} (algoritmo usato, parametri, input).
 \end{itemize}
-Inoltre sarà necessario consentire la registrazione di nuovi algoritmi, hardware, dataset, parametri, librerie. Ci si aspetta inoltre che la base di dati generi la sequenza di comandi necessaria per l'installazione di una libreria su una macchina, e che sia possibile verificare se un'istanza di \fbox{Algorithm} può essere eseguita su un certo \fbox{Hardware}.
+Inoltre sarà necessario consentire la registrazione di nuovi algoritmi, hardware, dataset, parametri, librerie. Ci si aspetta inoltre che la base di dati generi la sequenza di comandi necessaria per l'installazione di una libreria su una macchina, o per il download di un'istanza di \fbox{Data}, e che sia possibile verificare se un'istanza di \fbox{Algorithm} può essere eseguita su un certo \fbox{Hardware}.
+
+Le operazioni descritte saranno eseguite dal wrapper, che utilizzerà la base di dati per reperire le informazioni necessarie tramite alcune semplici query.
 
 \section{Schema concettuale ristrutturato}
-Sono state rimosse le generalizzazioni totali \fbox{Cluster} e \fbox{Computer} di \fbox{Hardware}, l'attributo \emph{Nodes} di \fbox{Cluster} è accorpato a \fbox{Hardware}, e vale coerentemente ``1'' se l'istanza è di tipo \fbox{Computer}. Per chiarezza si potrebbe inserire un ulteriore attributo \emph{Cluster} che possa assumere solo valori booleani, in quanto questa informazione viene utilizzata per generare il comando utile a lanciare lo script relativo ad un esperimento (\texttt{sbatch script.sh} per un cluster, \texttt{python3 script.py} per una macchina personale). Si è deciso però di evitare in quanto questa informazione può essere facilmente recuperata con un test sul numero di nodi della relative istanza di \fbox{Hardware}.
+Sono state rimosse le generalizzazioni totali \fbox{Cluster} e \fbox{Computer} di \fbox{Hardware}, l'attributo \emph{Nodes} di \fbox{Cluster} è accorpato a \fbox{Hardware}, e vale coerentemente ``1'' se l'istanza è di tipo \fbox{Computer}. Per chiarezza si potrebbe inserire un ulteriore attributo \emph{Cluster} che possa assumere solo valori booleani, in quanto questa informazione viene utilizzata per generare il comando utile a lanciare lo script relativo ad un esperimento (\texttt{sbatch script.sh} per un cluster, \texttt{python3 script.py} per una macchina personale). Si è deciso però di evitare in quanto questa informazione può essere facilmente recuperata, e l'attributo \emph{Nodes} è sufficientemente esplicativo.
 
 Sono state rimosse le generalizzazioni parziali di \fbox{Data} in quanto la loro presenza non apportava un particolare contributo; sono state rimpiazzate dall'attributo \emph{Format}, che consente all'utente di conoscere in anticipo il formato del dataset per regolarsi di conseguenza sul metodo adeguato per aprirlo. Gli attributi \emph{Shape} e \emph{Dtype} di \emph{NumPy} possono essere ottenuti rapidamente una volta aperto il dataset (per evitare il costo del caricamento in RAM si può usare il comando \texttt{np.load(..., mmap\_mode='r')}).
 
@@ -90,7 +96,7 @@ L'entità \fbox{Parameters} è stata trasformata in un attributo dell'entità \f
 
 \begin{figure}[H]
     \makebox[\textwidth][c]{\includegraphics[width=1.6\textwidth]{res/schema_concettuale_ristrutturato.png}}
-    \caption{Schema concettuale ristrutturato del progetto.}
+    \caption{Schema concettuale ristrutturato del progetto; fli attributi che fungono da \emph{primary key} sono riportati con il suffisso ``!'',mentre le relazioni aventi questo compito sono rappresentate tramite una linea più spessa. L'immagine è consultabile con una risoluzione migliore nel file in allegato ``\texttt{schema\_concettuale\_ristrutturato.png}''}
 \end{figure}
 
 \section{Volumi}
@@ -146,10 +152,10 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
       \caption*{Library}
       \begin{tabular}{||l c l||}
         \hline
-        Attributo & PK/FK & Tipo\\ [0.5ex]
+        Attributo & Ruolo & Tipo\\ [0.5ex]
         \hline\hline
         Name & PK & VARCHAR\\
-        Version & PK & VARCHAR\\
+        Version & PK & INT\\
         \hline
        \end{tabular}
     \end{minipage}
@@ -159,12 +165,12 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
         \caption*{Depends}
         \begin{tabular}{||l c l||}
           \hline
-          Attributo & PK/FK & Tipo\\ [0.5ex]
+          Attributo & Ruolo & Tipo\\ [0.5ex]
           \hline\hline
           DependentName & PK,FK & VARCHAR\\
-          DependentVersion & PK,FK & VARCHAR\\
+          DependentVersion & PK,FK & INT\\
           StandName & PK,FK & VARCHAR\\
-          StandVersion & PK,FK & VARCHAR\\
+          StandVersion & PK,FK & INT\\
           \hline
          \end{tabular}
       \end{minipage}
@@ -174,7 +180,7 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
         \caption*{Data}
         \begin{tabular}{||l c l||}
           \hline
-          Attributo & PK/FK & Tipo\\ [0.5ex]
+          Attributo & Ruolo & Tipo\\ [0.5ex]
           \hline\hline
           ID & PK & INT\\
           Name & & VARCHAR\\
@@ -192,11 +198,11 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
       \caption*{Has}
       \begin{tabular}{||l c l||}
         \hline
-        Attributo & PK/FK & Tipo\\ [0.5ex]
+        Attributo & Ruolo & Tipo\\ [0.5ex]
         \hline\hline
         Hardware & PK/FK & VARCHAR\\
         LibraryName & PK/FK & VARCHAR\\
-        LibraryVersion & PK/FK & VARCHAR\\
+        LibraryVersion & PK/FK & INT\\
         \hline
        \end{tabular}
     \end{minipage}
@@ -206,7 +212,7 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
         \caption*{Algorithm}
         \begin{tabular}{||l c l||}
           \hline
-          Attributo & PK/FK & Tipo\\ [0.5ex]
+          Attributo & Ruolo & Tipo\\ [0.5ex]
           \hline\hline
           GitCommit & PK & CHAR\\
           GitBranch & & VARCHAR\\
@@ -221,11 +227,11 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
         \caption*{Needs}
         \begin{tabular}{||l c l||}
           \hline
-          Attributo & PK/FK & Tipo\\ [0.5ex]
+          Attributo & Ruolo & Tipo\\ [0.5ex]
           \hline\hline
           Algorithm & PK/FK & CHAR\\
           LibraryName & PK/FK & VARCHAR\\
-          LibraryVersion & PK/FK & VARCHAR\\
+          LibraryVersion & PK/FK & INT\\
           \hline
          \end{tabular}
       \end{minipage}
@@ -239,7 +245,7 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
         \caption*{Hardware}
         \begin{tabular}{||l c l||}
             \hline
-            Attributo & PK/FK & Tipo\\ [0.5ex]
+            Attributo & Ruolo & Tipo\\ [0.5ex]
             \hline\hline
             MachineName & PK & VARCHAR\\
             RAM & & SMALLINT\\
@@ -257,7 +263,7 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
         \caption*{Available}
         \begin{tabular}{||l c l||}
           \hline
-          Attributo & PK/FK & Tipo\\ [0.5ex]
+          Attributo & Ruolo & Tipo\\ [0.5ex]
           \hline\hline
           Hardware & PK/FK & VARCHAR\\
           Data & PK/FK & VARCHAR\\
@@ -271,7 +277,7 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
         \caption*{Run}
         \begin{tabular}{||l c l||}
           \hline
-          Attributo & PK/FK & Tipo\\ [0.5ex]
+          Attributo & Ruolo & Tipo\\ [0.5ex]
           \hline\hline
           Algorithm & PK/FK & VARCHAR\\
           InputData & PK/FK & VARCHAR\\
@@ -291,11 +297,65 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
 \end{table}
 
 \section{Vincoli non esprimibili}
-Non sono ammessi cicli tra le dipendenze delle istanze di \fbox{Library}. Quando l'utente tenta di aggiungere una nuova entry a \fbox{Library} viene scaricato ed esaminato il file \texttt{requirements.txt} della libreria (per moduli Python); eventuali librerie necessarie non presenti nel database vengono aggiunte ricorsivamente. Se si forma un ciclo (a questo scopo due entry sono considerate uguali se gli attributi \emph{Name} coincidono) l'albero ``crolla'' e l'inserimento della prima libreria fallisce. In caso contrario aggiungiamo tutte le librerie alla base di dati, mantenendo quindi l'invariante relativa all'assenza di cicli nel database. Si noti che non si è ancora scaricato materialmente niente su una macchina, sono stati considerati solamente i metadati delle librerie coinvolte.
+Non sono ammessi cicli tra le dipendenze delle istanze di \fbox{Library}. Quando l'utente tenta di aggiungere una nuova entry a \fbox{Library} viene scaricato ed esaminato il file \texttt{requirements.txt} della libreria; eventuali librerie necessarie non presenti nel database vengono registrate con un procedimento ricorsivo; per ogni livello di dipendenza la base di dati deve aggiungere tutti i nodi del sotto-albero al nodo da cui esse sono state generate. Ad esempio la libreria \texttt{PyDMD} dipende da \texttt{EZyRB} che a sua volta dipende da \texttt{NumPy} e \texttt{SciPy}, per cui sarà necessario aggiungere le librerie \texttt{NumPy} e \texttt{SciPy} alle dipendenze di \texttt{EZyRB}, e le librerie \texttt{NumPy}, \texttt{SciPy}, \texttt{EZyRB} alle dipendenze di \texttt{PyDMD}.
 
-In modo simile (la situazione è più semplice) si verifica l'assenza di cicli nella relazione \emph{Fixes} tra istanze di \fbox{Algorithm}.
+Se si forma un ciclo (a questo scopo due entry sono considerate uguali se gli attributi \emph{Name} coincidono) l'albero ``crolla'' e l'inserimento della prima libreria fallisce. In caso contrario aggiungiamo tutte le librerie alla base di dati, mantenendo quindi l'invariante relativa all'assenza di cicli nel database. Si noti che non si è ancora scaricato materialmente niente su una macchina, sono stati considerati solamente i metadati delle librerie coinvolte.
+
+Se è stato fatto tutto in modo corretto, per verificare l'assenza di cicli è sufficiente il seguente check:
+
+\begin{verbatim}
+  CHECK ((SELECT count(*) FROM Depends
+    WHERE DependentName = StandName) == 0)
+\end{verbatim}
+
+In modo simile (la situazione è più semplice) si verifica l'assenza di cicli nella relazione \emph{Fixes} tra istanze di \fbox{Algorithm}. Questo vincolo può essere facilmente imposto non consentendo la modifica individuale dell'attributo \emph{Fixes} di \fbox{Algorithm}, e bloccando istanze che puntino a sè stesse con il seguente check:
+
+\begin{verbatim}
+  CHECK ((SELECT count(*) FROM Algorithm
+    WHERE Fixes = GitCommit) == 0)
+\end{verbatim}
+
+Quando vige una relazione di tipo \emph{Has} tra un \fbox{Hardware} ed una istanza $X$ di \fbox{Library} deve valere lo stesso tipo di relazione anche tra la stessa macchina e tutte le librerie da cui dipende $X$.
 
 Non sono ammesse relazioni di tipo \emph{Has} tra un'istanza di \fbox{Hardware} ed un'istanza $X$ di \fbox{Library} se sulla stessa macchina non sono presenti tutte le librerie da cui $X$ dipende.
+
+Non sono ammesse istanze di \fbox{Run} in cui si abbia che l'istanza di \fbox{Algorithm} verso cui punta l'attributo \emph{Algorithm} dipenda da librerie non disponibili sulla macchina verso cui punta l'attributo \emph{Hardware}.
+
+\begin{verbatim}
+  CHECK ((SELECT count(*) FROM (
+      SELECT h.LibraryName
+      FROM Run r
+      INNER JOIN Needs n
+      ON r.Algorithm = n.Algorithm
+      LEFT JOIN Has h
+      ON r.Hardware = h.Hardware AND n.StandName = h.LibraryName
+        AND n.StandVersion <= h.LibraryVersion
+      WHERE h.LibraryName is NULL
+    )
+  ) == 0)
+\end{verbatim}
+
+Analogamente non è possibile avere un'istanza di \fbox{Run} che prende in input (attributo \emph{InputData}) un'istanza di \fbox{Data} non disponibile sulla macchina usata per eseguire l'esperimento.
+
+\begin{verbatim}
+  CHECK ((SELECT count(*) FROM (
+      SELECT a.Path
+      FROM Run r
+      LEFT JOIN Available a
+      ON r.Hardware = a.Hardware AND a.Data = r.InputData
+      WHERE a.Path is NULL
+    )
+  ) == 0)
+\end{verbatim}
+
+Un'istanza di \fbox{Data} che rappresenta l'output di un algoritmo (quindi è legata ad un'istanza di \fbox{Run} da una relazione di tipo \emph{Returns}) non può fungere da input per un altro algoritmo (ovvero essere legata ad un'istanza di \fbox{Run} da una relazione di tipo \emph{On}).
+
+\begin{verbatim}
+  CHECK ((SELECT count(*) FROM Run r1 INNER JOIN Run r2
+    ON r1.InputData = r2.OutputData) == 0)
+\end{verbatim}
+
+Si tratta più che altro di un vincolo di sicurezza, anche se in alcuni esperimenti può essere necessario iterare più volte l'applicazione di uno o più algoritmi prima di poter considerare il risultato ottenuto valido.
 
 \section{Note}
 Si potrebbe pensare che lasciare nella tabella \fbox{Library} un numero indefinito di versioni di una stessa libreria sia dannoso in termini di spazio: sarebbe sufficiente mantenere solo le librerie referenziate dall'ultima versione di un algoritmo. Il motivo per cui si è scelto di non inserire un \emph{check} per cancellare in modo autonomo dalla tabella librerie che siamo certi non saranno più usate in una \fbox{Run} è che si intende mantenere un database di snapshot: poter ricostruire nel dettaglio quali librerie ed in quale versione erano presenti sulla macchina è fondamentale per risolvere bug o verificare risultati inattesi. E' anche il motivo per cui si consiglia di specificare la versione delle librerie nel file \texttt{requirements.txt}. Per gli stessi motivi consentiamo la convivenza di più versioni di una libreria su uno stesso \fbox{Hardware} (resa possibile da utility come \texttt{pipenv}).

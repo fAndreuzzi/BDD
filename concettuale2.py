@@ -24,10 +24,16 @@ def make_attributes(entity, labels, constraint=True):
 
 relation_numbers_to_str = lambda tp: '{},{}'.format(*tp)
 
-def make_relation(label, first, second, first_relation_numbers, second_relation_numbers):
+def make_relation(label, first, second, first_relation_numbers, second_relation_numbers, primary_key=False):
     graph.add_node(label, shape='diamond', fontsize=fontsize)
-    graph.add_edge(first, label, headlabel=relation_numbers_to_str(first_relation_numbers),
-        labelfontsize=relation_numbers_fontsize, labeldistance=2.0)
+
+    if primary_key:
+        graph.add_edge(first, label, headlabel=relation_numbers_to_str(first_relation_numbers),
+            labelfontsize=relation_numbers_fontsize, labeldistance=2.0, penwidth=3.0)
+    else:
+        graph.add_edge(first, label, headlabel=relation_numbers_to_str(first_relation_numbers),
+            labelfontsize=relation_numbers_fontsize, labeldistance=2.0)
+
     graph.add_edge(second, label, headlabel=relation_numbers_to_str(second_relation_numbers),
         labelfontsize=relation_numbers_fontsize, labeldistance=2.0)
 
@@ -48,9 +54,9 @@ available_label = make_attributes('Available', ['Path'])
 
 # relations
 make_relation('Available', 'Data', 'Hardware', (0, 'N'), (0, 'N'))
-make_relation('Uses', 'Run', 'Algorithm', (0, 'N'), (1, 1))
-make_relation('On', 'Run', 'Data', (0, 1), (1, 1))
-make_relation('Where', 'Run', 'Hardware', (0, 'N'), (1, 1))
+make_relation('Uses', 'Run', 'Algorithm', (0, 'N'), (1, 1), primary_key=True)
+make_relation('On', 'Run', 'Data', (0, 1), (1, 1),  primary_key=True)
+make_relation('Where', 'Run', 'Hardware', (0, 'N'), (1, 1),  primary_key=True)
 make_relation('Returns', 'Run', 'Data', (0, 1), (0, 1))
 make_relation('Fixes', 'Algorithm', 'Algorithm', (0, 1), (0, 1))
 make_relation('Has', 'Hardware', 'Library', (0, 'N'), (0, 'N'))
