@@ -31,7 +31,9 @@ La base di dati è pensata in modo da essere circondata da un wrapper che riceve
 
 \section{Ipotesi}
 \label{sec:ipotesi}
-Si supporrà che sui cluster presi in considerazione sia installato il workload manager \texttt{Slurm}. Inoltre l'utente fittizio ``wrapper'' (che ingloba la base di dati) deve avere i diritti di lettura e scrittura ovunque sia necessario, ovvero su tutte le macchine registrate nella tabella \fbox{Hardware}. Inoltre ad ogni macchina (computer personale o cluster) è associato un nome univoco all'interno dell'organizzazione.
+Si supporrà che sui cluster presi in considerazione sia installato il workload manager \texttt{Slurm}. Inoltre l'utente fittizio ``wrapper'' (che ingloba la base di dati) deve avere i diritti di lettura e scrittura ovunque sia necessario, ovvero su tutte le macchine registrate nella tabella \fbox{Hardware}.
+
+Ad ogni macchina (computer personale o cluster) è associato un nome univoco all'interno dell'organizzazione.
 
 Gli algoritmi saranno implementati in Python (un linguaggio molto usato in ambito scientifico) ed accetteranno parametri posizionali di tipo intero corrispondenti ad indici di liste definite negli stessi algoritmi. Queste saranno definite all'interno degli algoritmi in questo modo:
 
@@ -39,7 +41,7 @@ Gli algoritmi saranno implementati in Python (un linguaggio molto usato in ambit
 
 Ad esempio, lanciando uno script con ``\texttt{python3 script.py 2}'' si eseguirà l'algoritmo prendendo come primo parametro il terzo valore della lista \texttt{pod\_ranks}. Questa supposizione ci consente di delegare all'utente la definizione di tipi di input fantasiosi e potenzialmente non supportati dal DBMS.
 
-Si supporrà che le implementazioni degli algoritmi siano disponibili istantaneamente su tutte le macchine. Trattandosi solitamente di script solitamente leggeri perchè privi di UI, la sincronizzazione tra dispositivi risulta molto semplice e veloce, sicchè possiamo ignorarla.
+Si supporrà che le implementazioni degli algoritmi siano disponibili istantaneamente su tutte le macchine. Trattandosi di script solitamente leggeri perchè privi di \emph{user interface}, la sincronizzazione tra dispositivi risulta molto semplice e veloce, sicchè possiamo ignorarla.
 
 Su tutte le macchine sarà installato di default il package manager \href{https://pypi.org/project/pip/}{pip}, uno dei più popolari per l'installazione di librerie Python.
 
@@ -63,10 +65,10 @@ Viene fornita una descrizione sintetica delle entità, delle relazioni e degli a
     \item \fbox{Parameters}: Ogni riga contiene una tupla univoca di interi che rappresenta una possibile lista di parametri di un algoritmo, come specificato nella Sezione \ref{sec:ipotesi}. Non tutte le tuple di parametri sono supportate da tutti gli algoritmi, dato che alcuni possono richiedere un numero inferiore o superiore di parametri a seconda del metodo che implementano. Per questo motivo è stata aggiunta la relazione \emph{Supports}.
     \item \fbox{Library}: Una libreria non standard, identificata univocamente da nome e versione. Si supporrà che la disponibilità di una libreria su una macchina implichi la sua presenza all'interno della variabile di sistema \texttt{PATH}, il che consente di evitare di specificare un percorso per raggiungere i file necessari.
 
-    Una libreria può dipendere da altre librerie, ovvero volendo utilizzare una libreria $X$ che dipende dalle librerie $[A,B,C]$ è necessario avere installate $[A,B,C]$ sulla macchina su cui si intende eseguire l'esperimento. La relazione \emph{Depends} modelizza questo requisito.
-    \item \fbox{Data}: Dataset di input, oppure output di una particolare \fbox{Run} caratterizzata da un \emph{Name}. Prendiamo in considerazione diversi formati: NumPy, XML, CSV. Ognuno richiede metodi differenti per l'apertura.
+    Una libreria può dipendere da altre librerie, ovvero volendo utilizzare una libreria $X$ che dipende dalle librerie $[A,B,C]$ è necessario avere installate $[A,B,C]$ sulla macchina su cui si intende eseguire l'esperimento. La relazione \emph{Depends} modellizza questo requisito.
+    \item \fbox{Data}: Dataset di input o output di una particolare \fbox{Run}. Sono ammessi diversi formati: NumPy, XML, CSV. Ognuno richiede metodi differenti per l'apertura.
 
-    Essendo i dataset in generale considerevolmente pesanti, non possiamo supporre che ciascuno sia disponibile istantaneamente su tutte le macchine. Per questa ragione è stata introdotta la relazione \emph{Available}, che lega coppie composte da un dataset ed una macchina su cui questo dataset è disponibile senza operazioni intermedie (che invece potrebbero richiedere del tempo).
+    Essendo i dataset in generale considerevolmente pesanti, non possiamo supporre che ciascuno sia disponibile istantaneamente su tutte le macchine. Per questa ragione è stata introdotta la relazione \emph{Available}, che lega coppie composte da un dataset ed una macchina su cui questo dataset è disponibile senza operazioni intermedie (che invece potrebbero richiedere del tempo). Il percorso assoluto a cui il dataset è reperibile nella macchina facente parte della coppia è registrato nell'attributo \emph{Path} della relazione.
     \item \fbox{Run}: Il risultato di un esperimento con un ben specificato \fbox{Algorithm} (tramite la relazione \emph{Uses}), su un \fbox{Hardware} specifico (relazione \emph{Where}), applicato ad un'istanza di \fbox{Data} in input (relazione \emph{On}), con una precisa tupla di parametri (relazione \emph{With}).
 
     L'attributo \emph{Date} registra la data di esecuzione dell'esperimento (nel caso di esperimenti lunghi, la data di inizio), \emph{Duration} la durata in secondi, \emph{RAM} la memoria complessiva utilizzata, \emph{ExitCode} il codice restituito dallo script (che può essere utilizzato per verificare l'eventuale occorrenza di errori), \emph{Error} una stringa esplicativa dell'eventuale errore occorso.
@@ -83,7 +85,7 @@ L'idea del progetto è automatizzare, tramite l'utilizzo del wrapper che ingloba
     \item Generazione del comando per lanciare lo script in cui consiste l'esperimento, che tiene conto dei parametri e della piattaforma (nel caso di un cluster il comando sarà del tipo \texttt{sbatch ...});
     \item Generazione di un percorso dove salvare l'output dell'esperimento, con nome dipendente dagli elementi che caratterizzano la \emph{Run} (algoritmo usato, parametri, input).
 \end{itemize}
-Inoltre sarà necessario consentire la registrazione di nuovi algoritmi, hardware, dataset, parametri, librerie. Ci si aspetta inoltre che la base di dati generi la sequenza di comandi necessaria per l'installazione di una libreria su una macchina, o per il download di un'istanza di \fbox{Data}, e che sia possibile verificare se un'istanza di \fbox{Algorithm} può essere eseguita su un certo \fbox{Hardware}.
+Inoltre sarà necessario consentire la registrazione di nuovi algoritmi, hardware, dataset, parametri, librerie. Ci si aspetta inoltre che la base di dati generi la sequenza di comandi necessaria per l'installazione di una libreria su una macchina, o per il download di un'istanza di \fbox{Data}.
 
 Le operazioni descritte saranno eseguite dal wrapper, che utilizzerà la base di dati per reperire le informazioni necessarie tramite alcune semplici query.
 
@@ -138,11 +140,11 @@ Consideriamo la base di dati come uno strumento utilizzabile nell'ambito di un s
     \end{minipage}
 \end{table}
 
-Ci si aspetta di avere all'incirca 5 dataset (tipo \fbox{Data}) in ingresso, un insieme ragionevole di esperimenti per considerare valido il metodo sperimentato. Abbiamo inoltre diversi algoritmi da testare  (tipo \fbox{Algorithm}): il numero alto di entità di questo tipo è dovuto al fatto che nuove versioni di uno stesso algoritmo (bugfix, nuove funzionalità, ...) sono considerate come entry differenti.
+Ci si aspetta di avere all'incirca 5 dataset (tipo \fbox{Data}) in ingresso, un insieme ragionevole di esperimenti per considerare valido il metodo sperimentato. Abbiamo inoltre diversi algoritmi da testare  (tipo \fbox{Algorithm}): il numero alto di entità di questo tipo è dovuto al fatto che nuove versioni di uno stesso algoritmo (bugfix, nuove funzionalità, ...) sono considerate come entry differenti, e lo stesso vale per esperimenti in cui non viene cambiato l'algoritmo ma la tupla di parametri.
 
 In genere testeremo un algoritmo con una combinazione di parametri ``veloce'' su un computer privato per eliminare immediatamente eventuali bug, per poi lanciare un pool di jobs su un cluster. Ogni esecuzione è rappresentata da un oggetto di tipo \fbox{Run}, e produce un output di tipo \fbox{Data}. L'esecuzione ``di test'' non è conteggiata perchè evidentemente influisce poco sul numero complessivo.
 
-Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del valore medio dell'output di \texttt{pip freeze | wc -l} su diversi computer, stimando il tutto per eccesso in quanto più versioni di una stessa libreria possono convivere nella base di dati (essendo installate su \fbox{Hardware} diversi).
+Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del valore medio dell'output di \texttt{pip freeze | wc -l} su diversi computer, stimando il tutto per eccesso in quanto più versioni di una stessa libreria possono convivere.
 
 \section{Schema logico}
 \begin{table}[H]
@@ -170,7 +172,7 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
           DependentName & PK,FK & VARCHAR\\
           DependentVersion & PK,FK & INT\\
           StandName & PK,FK & VARCHAR\\
-          StandVersion & PK,FK & INT\\
+          StandVersion & FK & INT\\
           \hline
          \end{tabular}
       \end{minipage}
@@ -231,12 +233,13 @@ Il volume dell'entità \fbox{Library} è stato valutato come approssimazione del
           \hline\hline
           Algorithm & PK/FK & CHAR\\
           LibraryName & PK/FK & VARCHAR\\
-          LibraryVersion & PK/FK & INT\\
+          LibraryVersion & FK & INT\\
           \hline
          \end{tabular}
       \end{minipage}
     }
 \end{table}
+Riteniamo necessario un unico chiarimento: nella relazione \fbox{Depends} gli attributi \emph{Dependent*} hanno il ruolo della libreria ``dipendente'', mentre gli attributi \emph{Stand*} sono relativi alla libreria che ``sta in piedi da sola''.
 
 \begin{table}[H]
     \makebox[\textwidth][c]{
@@ -304,15 +307,19 @@ Se si forma un ciclo (a questo scopo due entry sono considerate uguali se gli at
 Se è stato fatto tutto in modo corretto, per verificare l'assenza di cicli è sufficiente il seguente check:
 
 \begin{verbatim}
-  CHECK ((SELECT count(*) FROM Depends
-    WHERE DependentName = StandName) == 0)
+  CHECK (
+    (SELECT count(*) FROM Depends
+    WHERE DependentName = StandName)
+    == 0)
 \end{verbatim}
 
 In modo simile (la situazione è più semplice) si verifica l'assenza di cicli nella relazione \emph{Fixes} tra istanze di \fbox{Algorithm}. Questo vincolo può essere facilmente imposto non consentendo la modifica individuale dell'attributo \emph{Fixes} di \fbox{Algorithm}, e bloccando istanze che puntino a sè stesse con il seguente check:
 
 \begin{verbatim}
-  CHECK ((SELECT count(*) FROM Algorithm
-    WHERE Fixes = GitCommit) == 0)
+  CHECK (
+    (SELECT count(*) FROM Algorithm
+    WHERE Fixes = GitCommit)
+    == 0)
 \end{verbatim}
 
 Quando vige una relazione di tipo \emph{Has} tra un \fbox{Hardware} ed una istanza $X$ di \fbox{Library} deve valere lo stesso tipo di relazione anche tra la stessa macchina e tutte le librerie da cui dipende $X$.
@@ -351,8 +358,12 @@ Analogamente non è possibile avere un'istanza di \fbox{Run} che prende in input
 Un'istanza di \fbox{Data} che rappresenta l'output di un algoritmo (quindi è legata ad un'istanza di \fbox{Run} da una relazione di tipo \emph{Returns}) non può fungere da input per un altro algoritmo (ovvero essere legata ad un'istanza di \fbox{Run} da una relazione di tipo \emph{On}).
 
 \begin{verbatim}
-  CHECK ((SELECT count(*) FROM Run r1 INNER JOIN Run r2
-    ON r1.InputData = r2.OutputData) == 0)
+  CHECK (
+    (SELECT count(*)
+    FROM Run r1
+    INNER JOIN Run r2
+    ON r1.InputData = r2.OutputData)
+    == 0)
 \end{verbatim}
 
 Si tratta più che altro di un vincolo di sicurezza, anche se in alcuni esperimenti può essere necessario iterare più volte l'applicazione di uno o più algoritmi prima di poter considerare il risultato ottenuto valido.
