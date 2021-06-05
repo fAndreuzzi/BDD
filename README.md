@@ -1,2 +1,2 @@
 # BDD
-Progetto per il corso di Basi di Dati - Spring 2021
+Final project for the course of Database Systems - Spring 2021.
